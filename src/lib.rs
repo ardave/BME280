@@ -42,50 +42,72 @@ const Bme280Osample4 : u8 = 3;
 const Bme280Osample8 : u8 = 4;
 const Bme280Osample16 : u8 = 5;
 
-pub struct Compensations {
-    dig_t1 : u16,
-    dig_t2 : i16,
-    dig_t3 : i16,
+pub struct Calibration {
+    // Still need to consider signed-ness and endianness:
+    t1 : u16,
+    t2 : u16,
+    t3 : u16,
 
-    dig_p1 : u16,
-    dig_p2 : i16,
-    dig_p3 : i16,
-    dig_p4 : i16,
-    dig_p5 : i16,
-    dig_p6 : i16,
-    dig_p7 : i16,
-    dig_p8 : i16,
-    dig_p9 : i16,
+    p1 : u16,
+    p2 : u16,
+    p3 : u16,
+    p4 : u16,
+    p5 : u16,
+    p6 : u16,
+    p7 : u16,
+    p8 : u16,
+    p9 : u16,
 
-    dig_h1 : u8,
-    dig_h2 : i16,
-    dig_h3 : u8,
-    dig_h7 : i8    
+    h1 : u8,
+    h2 : u16,
+    h3 : u8,
+    h7 : u8    
 }
 
 pub struct Bme280 {
 }
 
-fn load_calibration(dev: &mut LinuxI2CDevice) {
+fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CError> {
     // Still need to consider signed-ness and endianness:
-    let dig_t1 = dev.smbus_read_word_data(bme280_register_dig_t1);
-    let dig_t2 = dev.smbus_read_word_data(bme280_register_dig_t2);
-    let dig_t3 = dev.smbus_read_word_data(bme280_register_dig_t3);
+    let dig_t1 = try!(dev.smbus_read_word_data(bme280_register_dig_t1));
+    let dig_t2 = try!(dev.smbus_read_word_data(bme280_register_dig_t2));
+    let dig_t3 = try!(dev.smbus_read_word_data(bme280_register_dig_t3));
 
-    let dig_p1 = dev.smbus_read_word_data(bme280_register_dig_p1);
-    let dig_p2 = dev.smbus_read_word_data(bme280_register_dig_p2);
-    let dig_p3 = dev.smbus_read_word_data(bme280_register_dig_p3);
-    let dig_p4 = dev.smbus_read_word_data(bme280_register_dig_p4);
-    let dig_p5 = dev.smbus_read_word_data(bme280_register_dig_p5);
-    let dig_p6 = dev.smbus_read_word_data(bme280_register_dig_p6);
-    let dig_p7 = dev.smbus_read_word_data(bme280_register_dig_p7);
-    let dig_p8 = dev.smbus_read_word_data(bme280_register_dig_p8);
-    let dig_p9 = dev.smbus_read_word_data(bme280_register_dig_p9);
+    let dig_p1 = try!(dev.smbus_read_word_data(bme280_register_dig_p1));
+    let dig_p2 = try!(dev.smbus_read_word_data(bme280_register_dig_p2));
+    let dig_p3 = try!(dev.smbus_read_word_data(bme280_register_dig_p3));
+    let dig_p4 = try!(dev.smbus_read_word_data(bme280_register_dig_p4));
+    let dig_p5 = try!(dev.smbus_read_word_data(bme280_register_dig_p5));
+    let dig_p6 = try!(dev.smbus_read_word_data(bme280_register_dig_p6));
+    let dig_p7 = try!(dev.smbus_read_word_data(bme280_register_dig_p7));
+    let dig_p8 = try!(dev.smbus_read_word_data(bme280_register_dig_p8));
+    let dig_p9 = try!(dev.smbus_read_word_data(bme280_register_dig_p9));
 
-    let dig_h1 = dev.smbus_read_byte_data(bme280_register_dig_h1);
-    let dig_h2 = dev.smbus_read_word_data(bme280_register_dig_h2);
-    let dig_h3 = dev.smbus_read_byte_data(bme280_register_dig_h3);
-    let dig_h7 = dev.smbus_read_byte_data(bme280_register_dig_h7);
+    let dig_h1 = try!(dev.smbus_read_byte_data(bme280_register_dig_h1));
+    let dig_h2 = try!(dev.smbus_read_word_data(bme280_register_dig_h2));
+    let dig_h3 = try!(dev.smbus_read_byte_data(bme280_register_dig_h3));
+    let dig_h7 = try!(dev.smbus_read_byte_data(bme280_register_dig_h7));
+
+    Ok(Calibration {
+        t1: dig_t1,
+        t2: dig_t2,
+        t3: dig_t3,
+
+        p1: dig_p1,
+        p2: dig_p2,
+        p3: dig_p3,
+        p4: dig_p4,
+        p5: dig_p5,
+        p6: dig_p6,
+        p7: dig_p7,
+        p8: dig_p8,
+        p9: dig_p9,
+
+        h1: dig_h1,
+        h2: dig_h2,
+        h3: dig_h3,
+        h7: dig_h7
+    })
 }
 
 fn create(i2c_addr: u16, busnum: u8) -> Result<Bme280, LinuxI2CError> {
