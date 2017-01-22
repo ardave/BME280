@@ -1,6 +1,7 @@
 [package]
-name = "foo"
+name = "BME280"
 version = "0.1.0"
 authors = ["Dave Falkner <ardave@gmail.com>"]
 
 [dependencies]
+i2cdev = "0.3.1"
