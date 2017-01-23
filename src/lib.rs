@@ -86,6 +86,9 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
     let dig_h1 = try!(dev.smbus_read_byte_data(bme280_register_dig_h1));
     let dig_h2 = try!(dev.smbus_read_word_data(bme280_register_dig_h2));
     let dig_h3 = try!(dev.smbus_read_byte_data(bme280_register_dig_h3));
+    let dig_h4 = try!(dev.smbus_read_byte_data(bme280_register_dig_h4));
+    let dig_h5 = try!(dev.smbus_read_byte_data(bme280_register_dig_h5)) as i32;
+    let dig_h6 = try!(dev.smbus_read_byte_data(bme280_register_dig_h6));
     let dig_h7 = try!(dev.smbus_read_byte_data(bme280_register_dig_h7));
 
     Ok(Calibration {
@@ -110,10 +113,10 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
     })
 }
 
-fn create(i2c_addr: u16, busnum: u8) -> Result<Bme280, LinuxI2CError> {
+pub fn create(i2c_addr: u16, busnum: u8) -> Result<Bme280, LinuxI2CError> {
     let devname = format!("/dev/i2c-{}", busnum);
     let mut device = try!(LinuxI2CDevice::new(devname, i2c_addr));
-    load_calibration(&mut device);
+    let calibration = load_calibration(&mut device);
     Ok(Bme280 { })
 }
 
