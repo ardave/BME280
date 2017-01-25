@@ -1,46 +1,48 @@
 extern crate i2cdev;
 
+use std::{thread, time};
+
 use i2cdev::core::*;
 use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
 
-const bme280_register_dig_t1 : u8 = 0x88;  // Trimming parameter registers
-const bme280_register_dig_t2 : u8 = 0x8A;
-const bme280_register_dig_t3 : u8 = 0x8C; 
+const BME280_REGISTER_DIG_T1 : u8 = 0x88;  // Trimming parameter registers
+const BME280_REGISTER_DIG_T2 : u8 = 0x8A;
+const BME280_REGISTER_DIG_T3 : u8 = 0x8C; 
 
-const bme280_register_dig_p1 : u8 = 0x8E;
-const bme280_register_dig_p2 : u8 = 0x90;
-const bme280_register_dig_p3 : u8 = 0x92;
-const bme280_register_dig_p4 : u8 = 0x94;
-const bme280_register_dig_p5 : u8 = 0x96;
-const bme280_register_dig_p6 : u8 = 0x98;
-const bme280_register_dig_p7 : u8 = 0x9A;
-const bme280_register_dig_p8 : u8 = 0x9C;
-const bme280_register_dig_p9 : u8 = 0x9E;
+const BME280_REGISTER_DIG_P1 : u8 = 0x8E;
+const BME280_REGISTER_DIG_P2 : u8 = 0x90;
+const BME280_REGISTER_DIG_P3 : u8 = 0x92;
+const BME280_REGISTER_DIG_P4 : u8 = 0x94;
+const BME280_REGISTER_DIG_P5 : u8 = 0x96;
+const BME280_REGISTER_DIG_P6 : u8 = 0x98;
+const BME280_REGISTER_DIG_P7 : u8 = 0x9A;
+const BME280_REGISTER_DIG_P8 : u8 = 0x9C;
+const BME280_REGISTER_DIG_P9 : u8 = 0x9E;
 
-const bme280_register_dig_h1 : u8 = 0xA1;
-const bme280_register_dig_h2 : u8 = 0xE1;
-const bme280_register_dig_h3 : u8 = 0xE3;
-const bme280_register_dig_h4 : u8 = 0xE4;
-const bme280_register_dig_h5 : u8 = 0xE5;
-const bme280_register_dig_h6 : u8 = 0xE6;
-const bme280_register_dig_h7 : u8 = 0xE7;
+const BME280_REGISTER_DIG_H1 : u8 = 0xA1;
+const BME280_REGISTER_DIG_H2 : u8 = 0xE1;
+const BME280_REGISTER_DIG_H3 : u8 = 0xE3;
+const BME280_REGISTER_DIG_H4 : u8 = 0xE4;
+const BME280_REGISTER_DIG_H5 : u8 = 0xE5;
+const BME280_REGISTER_DIG_H6 : u8 = 0xE6;
+const BME280_REGISTER_DIG_H7 : u8 = 0xE7;
 
-const bme280_register_chipid : u8 = 0xD0;
-const bme280_register_version : u8 = 0xD1;
-const bme280_register_softreset : u8 = 0xE0;
+const BME280_REGISTER_CHIPID : u8 = 0xD0;
+const BME280_REGISTER_VERSION : u8 = 0xD1;
+const BME280_REGISTER_SOFTRESET : u8 = 0xE0;
 
-const bme280_register_control_hum : u8 = 0xF2;
-const bme280_register_control : u8 = 0xF4;
-const bme280_register_config : u8 = 0xF5;
-const bme280_register_pressure_data : u8 = 0xF7;
-const bme280_register_temp_data : u8 = 0xFA;
-const bme280_register_humidity_dat : u8 = 0xFD;
+const BME280_REGISTER_CONTROL_HUM : u8 = 0xF2;
+const BME280_REGISTER_CONTROL : u8 = 0xF4;
+const BME280_REGISTER_CONFIG : u8 = 0xF5;
+const BME280_REGISTER_PRESSURE_DATA : u8 = 0xF7;
+const BME280_REGISTER_TEMP_DATA : u8 = 0xFA;
+const BME280_REGISTER_HUMIDITY_DAT : u8 = 0xFD;
 
-const Bme280Osample1 : u8 = 1;
-const Bme280Osample2 : u8 = 2;
-const Bme280Osample4 : u8 = 3;
-const Bme280Osample8 : u8 = 4;
-const Bme280Osample16 : u8 = 5;
+const BME280OSAMPLE1 : u8 = 1;
+const BME280OSAMPLE2 : u8 = 2;
+const BME280OSAMPLE4 : u8 = 3;
+const BME280OSAMPLE8 : u8 = 4;
+const BME280OSAMPLE16 : u8 = 5;
 
 pub struct Calibration {
     // Still need to consider signed-ness and endianness:
@@ -70,48 +72,46 @@ pub struct Bme280 {
 }
 
 impl Bme280 {
-    fn read_temperature(&mut self) -> f64 { 
-        self.Device.smbus_write_byte_data(bme280_register_control_hum, self.Mode);
+    fn read_raw_temp(&mut self) -> Result<f64, LinuxI2CError> { 
+        self.Device.smbus_write_byte_data(BME280_REGISTER_CONTROL_HUM, self.Mode);
         let meas = self.Mode << 5 | self.Mode << 2 | 1;
-        self.Device.smbus_write_byte_data(bme280_register_control, meas);
-
-        // self._device.write8(BME280_REGISTER_CONTROL, meas)
-        // sleep_time = 0.00125 + 0.0023 * (1 << self._mode)
-        // sleep_time = sleep_time + 0.0023 * (1 << self._mode) + 0.000575
-        // sleep_time = sleep_time + 0.0023 * (1 << self._mode) + 0.000575
-        // time.sleep(sleep_time)  # Wait the required time
-        // msb = self._device.readU8(BME280_REGISTER_TEMP_DATA)
-        // lsb = self._device.readU8(BME280_REGISTER_TEMP_DATA + 1)
-        // xlsb = self._device.readU8(BME280_REGISTER_TEMP_DATA + 2)
-        // raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4
-        // return raw
-        5.55 
+        self.Device.smbus_write_byte_data(BME280_REGISTER_CONTROL, meas);
+        let mut sleep_time = 0.00125 + 0.0023 * (1 << self.Mode) as f32;
+        sleep_time = sleep_time + 0.0023 * (1 << self.Mode) as f32 + 0.000575;
+        sleep_time = sleep_time + 0.0023 * (1 << self.Mode) as f32 + 0.000575;
+        let dur = time::Duration::from_millis((sleep_time * 1000.0) as u64);
+        thread::sleep(dur);
+        let msb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA)) as u64;
+        let lsb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA + 1)) as u64;
+        let xlsb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA + 2)) as u64;
+        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        Ok(raw as f64)
     }
 }
 
 fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CError> {
     // Still need to consider signed-ness and endianness:
-    let dig_t1 = try!(dev.smbus_read_word_data(bme280_register_dig_t1));
-    let dig_t2 = try!(dev.smbus_read_word_data(bme280_register_dig_t2));
-    let dig_t3 = try!(dev.smbus_read_word_data(bme280_register_dig_t3));
+    let dig_t1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T1));
+    let dig_t2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T2));
+    let dig_t3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T3));
 
-    let dig_p1 = try!(dev.smbus_read_word_data(bme280_register_dig_p1));
-    let dig_p2 = try!(dev.smbus_read_word_data(bme280_register_dig_p2));
-    let dig_p3 = try!(dev.smbus_read_word_data(bme280_register_dig_p3));
-    let dig_p4 = try!(dev.smbus_read_word_data(bme280_register_dig_p4));
-    let dig_p5 = try!(dev.smbus_read_word_data(bme280_register_dig_p5));
-    let dig_p6 = try!(dev.smbus_read_word_data(bme280_register_dig_p6));
-    let dig_p7 = try!(dev.smbus_read_word_data(bme280_register_dig_p7));
-    let dig_p8 = try!(dev.smbus_read_word_data(bme280_register_dig_p8));
-    let dig_p9 = try!(dev.smbus_read_word_data(bme280_register_dig_p9));
+    let dig_p1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P1));
+    let dig_p2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P2));
+    let dig_p3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P3));
+    let dig_p4 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P4));
+    let dig_p5 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P5));
+    let dig_p6 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P6));
+    let dig_p7 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P7));
+    let dig_p8 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P8));
+    let dig_p9 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P9));
 
-    let dig_h1 = try!(dev.smbus_read_byte_data(bme280_register_dig_h1));
-    let dig_h2 = try!(dev.smbus_read_word_data(bme280_register_dig_h2));
-    let dig_h3 = try!(dev.smbus_read_byte_data(bme280_register_dig_h3));
-    let dig_h4 = try!(dev.smbus_read_byte_data(bme280_register_dig_h4));
-    let dig_h5 = try!(dev.smbus_read_byte_data(bme280_register_dig_h5)) as i32;
-    let dig_h6 = try!(dev.smbus_read_byte_data(bme280_register_dig_h6));
-    let dig_h7 = try!(dev.smbus_read_byte_data(bme280_register_dig_h7));
+    let dig_h1 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H1));
+    let dig_h2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_H2));
+    let dig_h3 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H3));
+    let dig_h4 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H4));
+    let dig_h5 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H5)) as i32;
+    let dig_h6 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H6));
+    let dig_h7 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H7));
 
     Ok(Calibration {
         t1: dig_t1,
@@ -140,8 +140,8 @@ pub fn create(i2c_addr: u16, busnum: u8) -> Result<Bme280, LinuxI2CError> {
     let mut device = try!(LinuxI2CDevice::new(devname, i2c_addr));
     let calibration = load_calibration(&mut device);
     let maxOverSampling_and_NormalMode = 0x3F;
-    device.smbus_write_byte_data(bme280_register_control, maxOverSampling_and_NormalMode);
-    let mut bme280 = Bme280 { Device: device, Mode: Bme280Osample1 };
+    device.smbus_write_byte_data(BME280_REGISTER_CONTROL, maxOverSampling_and_NormalMode);
+    let mut bme280 = Bme280 { Device: device, Mode: BME280OSAMPLE1 };
     Ok(bme280)
 }
 
