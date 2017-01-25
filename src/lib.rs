@@ -67,6 +67,7 @@ pub struct Calibration {
 }
 
 pub struct Bme280 {
+    Calibration: Calibration,
     Device: LinuxI2CDevice,
     Mode: u8
 }
@@ -86,6 +87,27 @@ impl Bme280 {
         let xlsb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA + 2)) as u64;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         Ok(raw as f64)
+    }
+
+    fn read_temperature(&mut self) -> Result<f64, LinuxI2CError> {
+        let UT = try!(self.read_raw_temp());
+        let t1 = self.Calibration.t1 as f64;
+        let t2 = self.Calibration.t2 as f64;
+        let t3 = self.Calibration.t3 as f64;
+        let var1 = (UT / 16384.0 - t1 / 1024.0) * t2;
+        let var2 = ((UT / 131072.0 - t1 / 8192.0) * (UT / 131072.0 - t1 / 8192.0)) * t3 ;
+        let t_fine = (var1 + var2) as i32;
+        let temp = (var1 + var2) / 5120.0;
+
+
+        // UT = float(self.read_raw_temp())
+        // var1 = (UT / 16384.0 - self.dig_T1 / 1024.0) * float(self.dig_T2)
+        // var2 = ((UT / 131072.0 - self.dig_T1 / 8192.0) * (UT / 131072.0 - self.dig_T1 / 8192.0)) * float(self.dig_T3)
+        // self.t_fine = int(var1 + var2)
+        // temp = (var1 + var2) / 5120.0
+        // return temp
+        // let res : Result<f64, LinuxI2CError> = Ok(x);
+        Ok(temp)
     }
 }
 
@@ -138,10 +160,10 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
 pub fn create(i2c_addr: u16, busnum: u8) -> Result<Bme280, LinuxI2CError> {
     let devname = format!("/dev/i2c-{}", busnum);
     let mut device = try!(LinuxI2CDevice::new(devname, i2c_addr));
-    let calibration = load_calibration(&mut device);
+    let calibration = try!(load_calibration(&mut device));
     let maxOverSampling_and_NormalMode = 0x3F;
     device.smbus_write_byte_data(BME280_REGISTER_CONTROL, maxOverSampling_and_NormalMode);
-    let mut bme280 = Bme280 { Device: device, Mode: BME280OSAMPLE1 };
+    let mut bme280 = Bme280 { Device: device, Mode: BME280OSAMPLE1, Calibration: calibration };
     Ok(bme280)
 }
 
