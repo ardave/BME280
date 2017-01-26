@@ -98,15 +98,6 @@ impl Bme280 {
         let var2 = ((UT / 131072.0 - t1 / 8192.0) * (UT / 131072.0 - t1 / 8192.0)) * t3 ;
         let t_fine = (var1 + var2) as i32;
         let temp = (var1 + var2) / 5120.0;
-
-
-        // UT = float(self.read_raw_temp())
-        // var1 = (UT / 16384.0 - self.dig_T1 / 1024.0) * float(self.dig_T2)
-        // var2 = ((UT / 131072.0 - self.dig_T1 / 8192.0) * (UT / 131072.0 - self.dig_T1 / 8192.0)) * float(self.dig_T3)
-        // self.t_fine = int(var1 + var2)
-        // temp = (var1 + var2) / 5120.0
-        // return temp
-        // let res : Result<f64, LinuxI2CError> = Ok(x);
         Ok(temp)
     }
 }
