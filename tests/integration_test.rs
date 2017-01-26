@@ -10,7 +10,7 @@ fn it_can_initialize() {
         Ok(device) => assert!(true),
         Err(err) => {
             println!("Cause");
-            // println!("{}", err.cause());
+            println!("{}", err.cause().unwrap());
             println!("Description");
             println!("{}", err.description());    
             assert!(false);        
