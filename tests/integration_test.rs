@@ -1,4 +1,7 @@
+extern crate i2cdev;
 extern crate BME280;
+
+use std::error::Error;
 
 #[test]
 fn it_can_initialize() {
@@ -7,9 +10,10 @@ fn it_can_initialize() {
         Ok(device) => assert!(true),
         Err(err) => {
             println!("Cause");
-            println!(err.cause);
+            // println!("{}", err.cause());
             println!("Description");
-            println!(err.description);            
+            println!("{}", err.description());    
+            assert!(false);        
         }
     }
 }
