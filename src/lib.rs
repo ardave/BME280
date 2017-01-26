@@ -89,7 +89,7 @@ impl Bme280 {
         Ok(raw as f64)
     }
 
-    fn read_temperature(&mut self) -> Result<f64, LinuxI2CError> {
+    pub fn read_temperature(&mut self) -> Result<f64, LinuxI2CError> {
         let UT = try!(self.read_raw_temp());
         let t1 = self.Calibration.t1 as f64;
         let t2 = self.Calibration.t2 as f64;
