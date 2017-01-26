@@ -18,6 +18,7 @@ fn it_can_initialize() {
     }
 }
 
+#[test]
 fn temperature_reading_should_be_reasonable() {
     let mut device = BME280::create(0x77, 2).unwrap();
     let t = device.read_temperature().unwrap();
