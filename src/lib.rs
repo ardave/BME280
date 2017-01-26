@@ -104,7 +104,9 @@ impl Bme280 {
 
 fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CError> {
     // Still need to consider signed-ness and endianness:
+    println!("Start of calibration");
     let dig_t1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T1));
+    println!("Retrieved first register value");
     let dig_t2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T2));
     let dig_t3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T3));
 
@@ -117,7 +119,7 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
     let dig_p7 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P7));
     let dig_p8 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P8));
     let dig_p9 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P9));
-
+    println!("Somewhere in the middle.");
     let dig_h1 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H1));
     let dig_h2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_H2));
     let dig_h3 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H3));
@@ -125,7 +127,7 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
     let dig_h5 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H5)) as i32;
     let dig_h6 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H6));
     let dig_h7 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H7));
-
+    println!("Made it through calibration");
     Ok(Calibration {
         t1: dig_t1,
         t2: dig_t2,
