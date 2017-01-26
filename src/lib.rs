@@ -103,8 +103,6 @@ impl Bme280 {
 }
 
 fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CError> {
-    println!("Start of load_calibration");
-
     // Still need to consider signed-ness and endianness:
     let dig_t1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T1));
     let dig_t2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T2));
@@ -127,8 +125,6 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
     let dig_h5 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H5)) as i32;
     let dig_h6 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H6));
     let dig_h7 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H7));
-
-    println!("End of load_calibration");
 
     Ok(Calibration {
         t1: dig_t1,
@@ -153,14 +149,12 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
 }
 
 pub fn create(i2c_addr: u16, busnum: u8) -> Result<Bme280, LinuxI2CError> {
-    println!("Start of create()");
     let devname = format!("/dev/i2c-{}", busnum);
     let mut device = try!(LinuxI2CDevice::new(devname, i2c_addr));
     let calibration = try!(load_calibration(&mut device));
     let maxOverSampling_and_NormalMode = 0x3F;
     device.smbus_write_byte_data(BME280_REGISTER_CONTROL, maxOverSampling_and_NormalMode);
     let mut bme280 = Bme280 { Device: device, Mode: BME280OSAMPLE1, Calibration: calibration };
-    println!("End of create()");
     Ok(bme280)
 }
 
