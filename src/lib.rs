@@ -89,17 +89,85 @@ impl Bme280 {
         Ok(raw as f64)
     }
 
-    pub fn read_temperature(&mut self) -> Result<f64, LinuxI2CError> {
+    fn calc_t_fine(&mut self) -> Result<f64, LinuxI2CError> {
         let UT = try!(self.read_raw_temp());
         let t1 = self.Calibration.t1 as f64;
         let t2 = self.Calibration.t2 as f64;
         let t3 = self.Calibration.t3 as f64;
         let var1 = (UT / 16384.0 - t1 / 1024.0) * t2;
-        let var2 = ((UT / 131072.0 - t1 / 8192.0) * (UT / 131072.0 - t1 / 8192.0)) * t3 ;
-        let t_fine = (var1 + var2) as i32;
-        let temp = (var1 + var2) / 5120.0;
+        let var2 = ((UT / 131072.0 - t1 / 8192.0) * (UT / 131072.0 - t1 / 8192.0)) * t3;
+        let t_fine = (var1 + var2);
+        Ok(t_fine)
+    }
+
+    pub fn read_temperature(&mut self) -> Result<f64, LinuxI2CError> {
+        // Technically I'm skipping the step of casting to an integer, which would
+        // result in rounding down of the var1 and var2 that were used in the original
+        // calculation of t_fine:
+        let temp = try!(self.calc_t_fine()) / 5120.0;
         Ok(temp)
     }
+
+    fn read_raw_pressure(&mut self) -> Result<u32, LinuxI2CError> {
+        let msb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_PRESSURE_DATA)) as u32;
+        let lsb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_PRESSURE_DATA + 1)) as u32;
+        let xlsb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_PRESSURE_DATA + 2)) as u32;
+        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        Ok(raw)
+    }
+
+    pub fn read_pressure(&mut self) -> Result<f64, LinuxI2CError> {
+        let adc = try!(self.read_raw_pressure()) as f64;
+        let t_fine = try!(self.calc_t_fine());
+        
+        let p1 = self.Calibration.p1 as f64;
+        let p2 = self.Calibration.p2 as f64;
+        let p3 = self.Calibration.p3 as f64;
+        let p4 = self.Calibration.p4 as f64;
+        let p5 = self.Calibration.p5 as f64;
+        let p6 = self.Calibration.p6 as f64;
+        let p7 = self.Calibration.p7 as f64;
+        let p8 = self.Calibration.p8 as f64;
+        let p9 = self.Calibration.p9 as f64;
+        
+        let var1 = t_fine / 2.0 - 64000.0;
+        let var2 = var1 * var1 * p6 / 32768.0;
+        let var2_2 = var2 + var1 + p5 * 2.0;
+        let var2_3 = var2_2 / 4.0 + p4 * 65536.0;
+        let var1_2 = (p3 * var1 * var1 / 524288.0 + p2 * var1) / 524288.0;
+        let var1_3 = (1.0 + var1_2 / 32768.0) * p1;
+
+        if var1_3 == 0.0 {
+            return Ok(0.0);
+        }
+
+        let p = 1048576.0 - adc;
+        let p_2 = ((p - var2_3 / 4096.0) * 6250.0) / var1_3;
+        let var1_4 = p9 * p_2 * p_2 / 2147483648.0;
+        let var2_4 = p_2 * p8 / 32768.0;
+        let p_3 = p_2 + (var1_4 + var2_4 + p7) / 16.0;
+
+        Ok(p_3)
+    }
+
+    // def read_pressure(self):
+    //     """Gets the compensated pressure in Pascals."""
+    //     adc = self.read_raw_pressure()
+    //     var1 = self.t_fine / 2.0 - 64000.0
+    //     var2 = var1 * var1 * self.dig_P6 / 32768.0
+    //     var2 = var2 + var1 * self.dig_P5 * 2.0
+    //     var2 = var2 / 4.0 + self.dig_P4 * 65536.0
+    //     var1 = (
+    //            self.dig_P3 * var1 * var1 / 524288.0 + self.dig_P2 * var1) / 524288.0
+    //     var1 = (1.0 + var1 / 32768.0) * self.dig_P1
+    //     if var1 == 0:
+    //         return 0
+    //     p = 1048576.0 - adc
+    //     p = ((p - var2 / 4096.0) * 6250.0) / var1
+    //     var1 = self.dig_P9 * p * p / 2147483648.0
+    //     var2 = p * self.dig_P8 / 32768.0
+    //     p = p + (var1 + var2 + self.dig_P7) / 16.0
+    //     return p
 }
 
 fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CError> {
