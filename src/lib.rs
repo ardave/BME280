@@ -241,7 +241,7 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
         p3: dig_p3,
         p4: dig_p4,
         p5: dig_p5,
-        p6: dig_p6.to_le(),
+        p6: dig_p6.to_be(),
         p7: dig_p7,
         p8: dig_p8,
         p9: dig_p9,
