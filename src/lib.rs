@@ -158,6 +158,22 @@ impl Bme280 {
         let var2_4 = p_2 * p8 / 32768.0;
         let p_3 = p_2 + (var1_4 + var2_4 + p7) / 16.0;
 
+        println!("t_fine: {}", t_fine);
+
+        println!("var1: {}", var1);
+        println!("var1_2: {}", var1_2);
+        println!("var1_3: {}", var1_3);
+        println!("var1_4: {}", var1_4);
+
+        println!("var2: {}", var2);
+        println!("var2_2: {}", var2_2);
+        println!("var2_3: {}", var2_3);
+        println!("var2_4: {}", var2_4);
+
+        println!("p: {}", p);
+        println!("p: {}", p_2);
+        println!("p: {}", p_3);
+
         Ok(p_3)
     }
 
