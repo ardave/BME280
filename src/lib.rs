@@ -113,13 +113,21 @@ impl Bme280 {
         let lsb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_PRESSURE_DATA + 1)) as u32;
         let xlsb = try!(self.Device.smbus_read_byte_data(BME280_REGISTER_PRESSURE_DATA + 2)) as u32;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        println!("Raw is: {}", raw);
         Ok(raw)
     }
 
+    // def read_raw_pressure(self):
+    //     """Reads the raw (uncompensated) pressure level from the sensor."""
+    //     """Assumes that the temperature has already been read """
+    //     """i.e. that enough delay has been provided"""
+    //     msb = self._device.readU8(BME280_REGISTER_PRESSURE_DATA)
+    //     lsb = self._device.readU8(BME280_REGISTER_PRESSURE_DATA + 1)
+    //     xlsb = self._device.readU8(BME280_REGISTER_PRESSURE_DATA + 2)
+    //     raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4
+    //     return raw
+
     pub fn read_pressure(&mut self) -> Result<f64, LinuxI2CError> {
-        let adc = try!(self.read_raw_pressure()) as f64;
-        let t_fine = try!(self.calc_t_fine());
-        
         let p1 = self.Calibration.p1 as f64;
         let p2 = self.Calibration.p2 as f64;
         let p3 = self.Calibration.p3 as f64;
@@ -129,6 +137,9 @@ impl Bme280 {
         let p7 = self.Calibration.p7 as f64;
         let p8 = self.Calibration.p8 as f64;
         let p9 = self.Calibration.p9 as f64;
+
+        let adc = try!(self.read_raw_pressure()) as f64;
+        let t_fine = try!(self.calc_t_fine());
         
         let var1 = t_fine / 2.0 - 64000.0;
         let var2 = var1 * var1 * p6 / 32768.0;
