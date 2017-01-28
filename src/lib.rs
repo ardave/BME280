@@ -150,39 +150,44 @@ impl Bme280 {
 
         let adc = try!(self.read_raw_pressure()) as f64;
         let t_fine = 0.0;//try!(self.calc_t_fine());
+        println!("t_fine: {}", t_fine);
         
         let var1 = t_fine / 2.0 - 64000.0;
+        println!("var1: {}", var1);
+
         let var2 = var1 * var1 * p6 / 32768.0;
+        println!("var2: {}", var2);
+
         let var2_2 = var2 + var1 + p5 * 2.0;
+        println!("var2_2: {}", var2_2);
+    
         let var2_3 = var2_2 / 4.0 + p4 * 65536.0;
+        println!("var2_3: {}", var2_3);
+
         let var1_2 = (p3 * var1 * var1 / 524288.0 + p2 * var1) / 524288.0;
+        println!("var1_2: {}", var1_2);
+
         let var1_3 = (1.0 + var1_2 / 32768.0) * p1;
+        println!("var1_3: {}", var1_3);
 
         if var1_3 == 0.0 {
             return Ok(0.0);
         }
 
         let p = 1048576.0 - adc;
+        println!("p: {}", p);
+
         let p_2 = ((p - var2_3 / 4096.0) * 6250.0) / var1_3;
+        println!("p_2: {}", p_2);
+
         let var1_4 = p9 * p_2 * p_2 / 2147483648.0;
-        let var2_4 = p_2 * p8 / 32768.0;
-        let p_3 = p_2 + (var1_4 + var2_4 + p7) / 16.0;
-
-        println!("t_fine: {}", t_fine);
-
-        println!("var1: {}", var1);
-        println!("var1_2: {}", var1_2);
-        println!("var1_3: {}", var1_3);
         println!("var1_4: {}", var1_4);
 
-        println!("var2: {}", var2);
-        println!("var2_2: {}", var2_2);
-        println!("var2_3: {}", var2_3);
+        let var2_4 = p_2 * p8 / 32768.0;
         println!("var2_4: {}", var2_4);
 
-        println!("p: {}", p);
-        println!("p: {}", p_2);
-        println!("p: {}", p_3);
+        let p_3 = p_2 + (var1_4 + var2_4 + p7) / 16.0;
+        println!("p_3: {}", p_3);
 
         println!("Calibration: {}", self.Calibration);
 

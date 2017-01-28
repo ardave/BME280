@@ -191,17 +191,26 @@ class BME280(object):
         var2 = var1 * var1 * self.dig_P6 / 32768.0
         print "var2: {0}".format(var2)
         var2 = var2 + var1 * self.dig_P5 * 2.0
+        print "var2_2: {0}".format(var2)
         var2 = var2 / 4.0 + self.dig_P4 * 65536.0
+        print "var2_3: {0}".format(var2)        
         var1 = (
                self.dig_P3 * var1 * var1 / 524288.0 + self.dig_P2 * var1) / 524288.0
+        print "var1_2: {0}".format(var1)
         var1 = (1.0 + var1 / 32768.0) * self.dig_P1
+        print "var1_3: {0}".format(var1)
         if var1 == 0:
             return 0
         p = 1048576.0 - adc
+        print "p: {0}".format(p)
         p = ((p - var2 / 4096.0) * 6250.0) / var1
+        print "p_2: {0}".format(p)
         var1 = self.dig_P9 * p * p / 2147483648.0
+        print "var1_4: {0}".format(var1)
         var2 = p * self.dig_P8 / 32768.0
+        print "var2_4: {0}".format(var2)
         p = p + (var1 + var2 + self.dig_P7) / 16.0
+        print "p_3: {0}".format(p)
         return p
 
     def read_humidity(self):
