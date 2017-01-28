@@ -1,6 +1,7 @@
 extern crate i2cdev;
 
 use std::{thread, time};
+use std::fmt;
 
 use i2cdev::core::*;
 use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
@@ -64,6 +65,15 @@ pub struct Calibration {
     h2 : u16,
     h3 : u8,
     h7 : u8    
+}
+
+impl fmt::Display for Calibration {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "(t1:{}, t2:{}, t3:{}, p1:{}, p2:{}, p3:{}, p4:{}, p5:{}, p6:{}, p7:{}, p8:{}, p9:{}, h1:{}, h2:{}, h3:{}, h7:{})", 
+        self.t1, self.t2, self.t3, 
+        self.p2, self.p2, self.p3, self.p4, self.p5, self.p6, self.p7, self.p8, self.p9, 
+        self.h1, self.h2, self.h3, self.h7)
+    }
 }
 
 pub struct Bme280 {
@@ -173,6 +183,8 @@ impl Bme280 {
         println!("p: {}", p);
         println!("p: {}", p_2);
         println!("p: {}", p_3);
+
+        println!("Calibration: {}", self.Calibration);
 
         Ok(p_3)
     }
