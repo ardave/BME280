@@ -114,8 +114,9 @@ impl Bme280 {
         // Technically I'm skipping the step of casting to an integer, which would
         // result in rounding down of the var1 and var2 that were used in the original
         // calculation of t_fine:
-        let temp = try!(self.calc_t_fine()) / 5120.0;
-        Ok(temp)
+        let celcius = try!(self.calc_t_fine()) / 5120.0;
+        let fahrenheit = celcius * 1.8 + 32.0;
+        Ok(fahrenheit)
     }
 
     fn read_raw_pressure(&mut self) -> Result<u32, LinuxI2CError> {
@@ -186,12 +187,14 @@ impl Bme280 {
         let var2_4 = p_2 * p8 / 32768.0;
         println!("var2_4: {}", var2_4);
 
-        let p_3 = p_2 + (var1_4 + var2_4 + p7) / 16.0;
-        println!("p_3: {}", p_3);
+        let pascals = p_2 + (var1_4 + var2_4 + p7) / 16.0;
+        println!("pascals: {}", pascals);
 
         println!("Calibration: {}", self.Calibration);
 
-        Ok(p_3)
+        let in_hg = pascals *  0.000295299830714;
+
+        Ok(pascals)
     }
 
     // def read_pressure(self):
