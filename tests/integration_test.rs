@@ -29,7 +29,7 @@ fn temperature_reading_should_be_reasonable() {
 
 #[test]
 fn pressure_reading_should_be_reasonable() {
-        let mut device = BME280::create(0x77, 2).unwrap();
+    let mut device = BME280::create(0x77, 2).unwrap();
     let t = device.read_pressure().unwrap();
     println!("The pressure is: {:.2} in hg.", t);
     assert!(t > -25.0); 

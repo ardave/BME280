@@ -1,5 +1,5 @@
 [package]
-name = "BME280"
+name = "bme280"
 version = "0.1.0"
 authors = ["Dave Falkner <ardave@gmail.com>"]
 
