@@ -58,7 +58,7 @@ pub struct Calibration {
     p5 : u16,
     p6 : i16,
     p7 : u16,
-    p8 : u16,
+    p8 : i16,
     p9 : u16,
 
     h1 : u8,
@@ -227,7 +227,7 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
     let dig_p5 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P5));
     let dig_p6 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P6)) as i16;
     let dig_p7 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P7));
-    let dig_p8 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P8));
+    let dig_p8 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P8)) as i16;
     let dig_p9 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P9));
     let dig_h1 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H1));
     let dig_h2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_H2));
