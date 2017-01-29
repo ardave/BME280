@@ -150,7 +150,7 @@ impl Bme280 {
         let p9 = self.Calibration.p9 as f64;
 
         let adc = try!(self.read_raw_pressure()) as f64;
-        let t_fine = 0.0;//try!(self.calc_t_fine());
+        let t_fine = try!(self.calc_t_fine());
         // println!("t_fine: {}", t_fine);
         
         let var1 = t_fine / 2.0 - 64000.0;
