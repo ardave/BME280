@@ -52,7 +52,7 @@ pub struct Calibration {
     t3 : u16,
 
     p1 : u16,
-    p2 : u16,
+    p2 : i16,
     p3 : u16,
     p4 : u16,
     p5 : u16,
