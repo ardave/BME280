@@ -209,8 +209,10 @@ class BME280(object):
         print "p: {0}".format(p)
         p = ((p - var2 / 4096.0) * 6250.0) / var1
         print "p_2: {0}".format(p)
+        print "dig_P9: {0}".format(self.dig_P9)
         var1 = self.dig_P9 * p * p / 2147483648.0
         print "var1_4: {0}".format(var1)
+        print "dig_P8: {0}".format(self.dig_P8)
         var2 = p * self.dig_P8 / 32768.0
         print "var2_4: {0}".format(var2)
         p = p + (var1 + var2 + self.dig_P7) / 16.0
