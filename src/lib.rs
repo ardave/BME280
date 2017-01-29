@@ -221,7 +221,7 @@ fn load_calibration(dev: &mut LinuxI2CDevice) -> Result<Calibration, LinuxI2CErr
     let dig_t3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T3));
 
     let dig_p1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P1));
-    let dig_p2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P2));
+    let dig_p2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P2)) as i16;
     let dig_p3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P3));
     let dig_p4 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P4));
     let dig_p5 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P5));
