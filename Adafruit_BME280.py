@@ -195,6 +195,8 @@ class BME280(object):
         var2 = var2 + var1 * self.dig_P5 * 2.0
         print "var2_2: {0}".format(var2)
         var2 = var2 / 4.0 + self.dig_P4 * 65536.0
+        print "dig_p2: {0}".format(self.dig_P2)
+        print "dig_P3: {0}".format(self.dig_P3)
         print "var2_3: {0}".format(var2)        
         var1 = (
                self.dig_P3 * var1 * var1 / 524288.0 + self.dig_P2 * var1) / 524288.0
