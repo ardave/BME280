@@ -194,7 +194,7 @@ impl Bme280 {
 
         let in_hg = pascals *  0.000295299830714;
 
-        Ok(pascals)
+        Ok(in_hg)
     }
 
     // def read_pressure(self):
