@@ -182,6 +182,8 @@ class BME280(object):
 
     def read_pressure(self):
         """Gets the compensated pressure in Pascals."""
+        print "dig_p5: {0}".format(self.dig_p5)
+        print "dig_p6: {0}".format(self.dig_P6)
         adc = self.read_raw_pressure()
         print "adc: {0}".format(adc)
         print "t_fine is {0}".format(self.t_fine)
