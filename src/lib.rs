@@ -65,7 +65,7 @@ impl Bme280 {
         let msb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA)) as u64;
         let lsb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA + 1)) as u64;
         let xlsb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA + 2)) as u64;
-        let raw: i8 = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         Ok(raw as f64)
     }
 
