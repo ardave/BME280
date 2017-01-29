@@ -158,7 +158,7 @@ impl Bme280 {
         let var2 = var1 * var1 * p6 / 32768.0;
         println!("var2: {}", var2);
 
-        let var2_2 = var2 + var1 + p5 * 2.0;
+        let var2_2 = var2 + var1 * p5 * 2.0;
         println!("var2_2: {}", var2_2);
     
         let var2_3 = var2_2 / 4.0 + p4 * 65536.0;
