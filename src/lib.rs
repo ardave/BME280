@@ -241,6 +241,8 @@ impl<T> Bme280_2<T> where T: I2CDevice + Sized {
         let dig_h6 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H6));
         let dig_h7 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H7));
 
+        // let foo = Bme280_2::load_calibration_2(&mut dev);
+
         let cal = calibration::Calibration {
             t1: dig_t1,
             t2: dig_t2,
@@ -262,6 +264,11 @@ impl<T> Bme280_2<T> where T: I2CDevice + Sized {
             h7: dig_h7 };
 
         Ok(Bme280_2{ i2cdev: dev, calibration: cal })
+    }
+
+    fn load_calibration_2(mut dev: T) -> Result<i8, T::Error> {
+        let dig_p1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P1));
+        Ok(1)
     }
 }
 
