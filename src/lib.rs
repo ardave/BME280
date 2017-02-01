@@ -212,65 +212,7 @@ pub fn create(i2c_addr: u16, busnum: u8) -> Result<Bme280, LinuxI2CError> {
     Ok(bme280)
 }
 
-pub struct Bme280_2<T: I2CDevice + Sized> {
-    i2cdev: T,
-    calibration: calibration::Calibration
-}
 
-impl<T> Bme280_2<T> where T: I2CDevice + Sized {
-    pub fn new(mut dev: T) -> Result<Bme280_2<T>, T::Error> {
-        
-        let dig_t1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T1));
-        let dig_t2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T2));
-        let dig_t3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T3));
-
-        let dig_p1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P1));
-        let dig_p2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P2)) as i16;
-        let dig_p3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P3));
-        let dig_p4 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P4));
-        let dig_p5 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P5));
-        let dig_p6 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P6)) as i16;
-        let dig_p7 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P7));
-        let dig_p8 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P8)) as i16;
-        let dig_p9 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P9));
-        let dig_h1 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H1));
-        let dig_h2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_H2));
-        let dig_h3 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H3));
-        let dig_h4 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H4));
-        let dig_h5 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H5)) as i32;
-        let dig_h6 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H6));
-        let dig_h7 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H7));
-
-        // let foo = Bme280_2::load_calibration_2(&mut dev);
-
-        let cal = calibration::Calibration {
-            t1: dig_t1,
-            t2: dig_t2,
-            t3: dig_t3,
-
-            p1: dig_p1,
-            p2: dig_p2,
-            p3: dig_p3,
-            p4: dig_p4,
-            p5: dig_p5,
-            p6: dig_p6,
-            p7: dig_p7,
-            p8: dig_p8,
-            p9: dig_p9,
-
-            h1: dig_h1,
-            h2: dig_h2,
-            h3: dig_h3,
-            h7: dig_h7 };
-
-        Ok(Bme280_2{ i2cdev: dev, calibration: cal })
-    }
-
-    fn load_calibration_2(mut dev: T) -> Result<i8, T::Error> {
-        let dig_p1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P1));
-        Ok(1)
-    }
-}
 
 
 struct MySensor<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> {
