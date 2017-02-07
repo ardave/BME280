@@ -11,8 +11,7 @@ pub struct Bme280<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> {
     mode: u8
 }
 
-impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> 
-where T: I2CDevice<Error=LinuxI2CError> + Sized {
+impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
     pub fn new(dev: &'a mut T) -> Result<Bme280<'a, T>, LinuxI2CError> {
         let cal = try!(Bme280::get_calibration(dev));
