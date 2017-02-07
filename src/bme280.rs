@@ -1,5 +1,4 @@
 use std::{thread, time};
-
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::{LinuxI2CError};
 
@@ -19,7 +18,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(Bme280 { calibration: cal, device: dev, mode: BME280OSAMPLE1 })
     }
 
-    pub fn printCalibration(&mut self) {
+    pub fn print_calibration(&mut self) {
         println!("{}", self.calibration);
     }
 
@@ -172,7 +171,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }    
 }
 
-const BME280_REGISTER_DIG_T1 : u8 = 0x88;  // Trimming parameter registers
+pub const BME280_REGISTER_DIG_T1 : u8 = 0x88;  // Trimming parameter registers
 const BME280_REGISTER_DIG_T2 : u8 = 0x8A;
 const BME280_REGISTER_DIG_T3 : u8 = 0x8C; 
 
@@ -218,6 +217,9 @@ mod tests {
 
     use i2cdev::core::I2CDevice;
     use i2cdev::linux::{LinuxI2CError};
+    use std::io::{Error, ErrorKind};
+    use nix;
+    use bme280;
 
     struct FakeDevice {
 
@@ -271,10 +273,25 @@ mod tests {
         fn smbus_process_block(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
             Ok(())
         }
+    
+        /// Read 2 bytes form a given register on a device
+        fn smbus_read_word_data(&mut self, register: u8) -> Result<u16, LinuxI2CError> {
+            if register == bme280::BME280_REGISTER_DIG_T1 {
+                return Ok(28960)
+            }
+
+            let nix = LinuxI2CError::Nix(nix::Error::InvalidPath);
+            Err(nix)
+        }
+
+        // test pressure_reading_should_be_reasonable ... The pressure is: 29.61 in hg.
+        // test print_the_calibration ... (t1:28960, t2:26619, t3:50, p1:-10713, p2:-10713, p3:3024, p4:5831, p5:96, p6:-7, p7:9900, p8:-10230, p9:4285, h1:75, h2:355, h3:0, h7:30)
+        // test temperature_reading_should_be_reasonable ... The temperature is: 67.03
+
 
     }
 
     #[test]
-    fn it_works() {
+    fn fn_set_of_known_calibration_values_should_yield_known_temperature() {
     }
 }
