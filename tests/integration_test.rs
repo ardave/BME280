@@ -52,3 +52,14 @@ fn pressure_reading_should_be_reasonable() {
     assert!(p > -25.0); 
     assert!(p < 35.0);
 }
+
+#[test]
+fn print_the_calibration() {
+    let i2c_addr = 0x77;
+    let busnum = 2;
+    let devname = format!("/dev/i2c-{}", busnum);
+    let mut device = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let mut bme = Bme280::new(&mut device).unwrap();
+
+    bme.printCalibration();
+}

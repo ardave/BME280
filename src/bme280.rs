@@ -19,6 +19,10 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(Bme280 { calibration: cal, device: dev, mode: BME280OSAMPLE1 })
     }
 
+    pub fn printCalibration(&mut self) {
+        println!("{}", self.calibration);
+    }
+
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
         // Still need to consider signed-ness and endianness:
         let dig_t1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T1));
@@ -86,7 +90,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let t3 = self.calibration.t3 as f64;
         let var1 = (ut / 16384.0 - t1 / 1024.0) * t2;
         let var2 = ((ut / 131072.0 - t1 / 8192.0) * (ut / 131072.0 - t1 / 8192.0)) * t3;
-        let t_fine = (var1 + var2);
+        let t_fine = var1 + var2;
         Ok(t_fine)
     }
 
@@ -208,3 +212,69 @@ const BME280OSAMPLE8 : u8 = 4;
 const BME280OSAMPLE16 : u8 = 5;
 
 const MAX_OVER_SAMPLING_AND_NORMAL_MODE : u8 = 0x3F;
+
+#[cfg(test)]
+mod tests {
+
+    use i2cdev::core::I2CDevice;
+    use i2cdev::linux::{LinuxI2CError};
+
+    struct FakeDevice {
+
+    }
+
+    impl I2CDevice for FakeDevice {
+        type Error = LinuxI2CError;
+
+        /// Read data from the device to fill the provided slice
+        fn read(&mut self, data: &mut [u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        /// Write the provided buffer to the device
+        fn write(&mut self, data: &[u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        /// This sends a single bit to the device, at the place of the Rd/Wr bit
+        fn smbus_write_quick(&mut self, bit: bool) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        /// Read a block of up to 32 bytes from a device
+        ///
+        /// The actual number of bytes available to read is returned in the count
+        /// byte.  This code returns a correctly sized vector containing the
+        /// count bytes read from the device.
+        fn smbus_read_block_data(&mut self, register: u8) -> Result<Vec<u8>, Self::Error> {
+            Ok(vec![1,2,3])
+        }
+
+        /// Read a block of up to 32 bytes from a device
+        ///
+        /// Uses read_i2c_block_data instead read_block_data.
+        fn smbus_read_i2c_block_data(&mut self, register: u8, len: u8) -> Result<Vec<u8>, Self::Error> {
+            Ok(vec![1,2,3])
+        }
+
+        /// Write a block of up to 32 bytes to a device
+        ///
+        /// The opposite of the Block Read command, this writes up to 32 bytes to
+        /// a device, to a designated register that is specified through the
+        /// Comm byte. The amount of data is specified in the Count byte.
+        fn smbus_write_block_data(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+        /// Select a register, send 1 to 31 bytes of data to it, and reads
+        /// 1 to 31 bytes of data from it.
+        fn smbus_process_block(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
+
+    }
+
+    #[test]
+    fn it_works() {
+    }
+}
