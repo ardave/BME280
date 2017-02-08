@@ -24,26 +24,26 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
         // Still need to consider signed-ness and endianness:
-        let dig_t1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T1));
-        let dig_t2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T2));
-        let dig_t3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_T3));
+        let dig_t1 = try!(dev.smbus_read_word_data(Register::T1 as u8));
+        let dig_t2 = try!(dev.smbus_read_word_data(Register::T2 as u8));
+        let dig_t3 = try!(dev.smbus_read_word_data(Register::T3 as u8));
 
-        let dig_p1 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P1));
-        let dig_p2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P2)) as i16;
-        let dig_p3 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P3));
-        let dig_p4 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P4));
-        let dig_p5 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P5));
-        let dig_p6 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P6)) as i16;
-        let dig_p7 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P7));
-        let dig_p8 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P8)) as i16;
-        let dig_p9 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_P9));
-        let dig_h1 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H1));
-        let dig_h2 = try!(dev.smbus_read_word_data(BME280_REGISTER_DIG_H2));
-        let dig_h3 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H3));
-        let dig_h4 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H4));
-        let dig_h5 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H5)) as i32;
-        let dig_h6 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H6));
-        let dig_h7 = try!(dev.smbus_read_byte_data(BME280_REGISTER_DIG_H7));
+        let dig_p1 = try!(dev.smbus_read_word_data(Register::P1 as u8));
+        let dig_p2 = try!(dev.smbus_read_word_data(Register::P2 as u8)) as i16;
+        let dig_p3 = try!(dev.smbus_read_word_data(Register::P3 as u8));
+        let dig_p4 = try!(dev.smbus_read_word_data(Register::P4 as u8));
+        let dig_p5 = try!(dev.smbus_read_word_data(Register::P5 as u8));
+        let dig_p6 = try!(dev.smbus_read_word_data(Register::P6 as u8)) as i16;
+        let dig_p7 = try!(dev.smbus_read_word_data(Register::P7 as u8));
+        let dig_p8 = try!(dev.smbus_read_word_data(Register::P8 as u8)) as i16;
+        let dig_p9 = try!(dev.smbus_read_word_data(Register::P9 as u8));
+        let dig_h1 = try!(dev.smbus_read_byte_data(Register::H1 as u8));
+        let dig_h2 = try!(dev.smbus_read_word_data(Register::H2 as u8));
+        let dig_h3 = try!(dev.smbus_read_byte_data(Register::H3 as u8));
+        let dig_h4 = try!(dev.smbus_read_byte_data(Register::H4 as u8));
+        let dig_h5 = try!(dev.smbus_read_byte_data(Register::H5 as u8)) as i32;
+        let dig_h6 = try!(dev.smbus_read_byte_data(Register::H6 as u8));
+        let dig_h7 = try!(dev.smbus_read_byte_data(Register::H7 as u8));
         Ok(Calibration {
             t1: dig_t1,
             t2: dig_t2,
@@ -171,6 +171,41 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }    
 }
 
+pub enum Register {
+    T1 = 0x88,
+    T2  = 0x8A,
+    T3 = 0x8C,
+
+    P1  = 0x8E,
+    P2  = 0x90,
+    P3  = 0x92,
+    P4  = 0x94,
+    P5  = 0x96,
+    P6  = 0x98,
+    P7 = 0x9A,
+    P8  = 0x9C,
+    P9  = 0x9E,
+
+    H1  = 0xA1,
+    H2  = 0xE1,
+    H3 = 0xE3,
+    H4  = 0xE4,
+    H5  = 0xE5,
+    H6  = 0xE6,
+    H7  = 0xE7,
+
+    CHIPID = 0xD0,
+    VERSION  = 0xD1,
+    SOFTRESET  = 0xE0,
+
+    CONTROL_HUM  = 0xF2,
+    CONTROL  = 0xF4,
+    CONFIG = 0xF5,
+    PRESSURE_DATA = 0xF7,
+    TEMP_DATA = 0xFA,
+    HUMIDITY_DAT  = 0xFD
+}
+
 pub const BME280_REGISTER_DIG_T1 : u8 = 0x88;  // Trimming parameter registers
 const BME280_REGISTER_DIG_T2 : u8 = 0x8A;
 const BME280_REGISTER_DIG_T3 : u8 = 0x8C; 
@@ -219,7 +254,7 @@ mod tests {
     use i2cdev::linux::{LinuxI2CError};
     use std::io::{Error, ErrorKind};
     use nix;
-    use bme280;
+    use bme280::{Bme280, Register};
 
     struct FakeDevice {
 
@@ -276,12 +311,26 @@ mod tests {
     
         /// Read 2 bytes form a given register on a device
         fn smbus_read_word_data(&mut self, register: u8) -> Result<u16, LinuxI2CError> {
-            if register == bme280::BME280_REGISTER_DIG_T1 {
-                return Ok(28960)
-            }
+            match register {
+                register if register == Register::T1 as u8 => Ok(28960),
+                register if register == Register::T2 as u8 => Ok(26619),
+                register if register == Register::T3 as u8 => Ok(50),
+                register if register == Register::P1 as u8 => Ok(-10713i16 as u16),
+                register if register == Register::P2 as u8 => Ok(-10713i16 as u16),
+                register if register == Register::P3 as u8 => Ok(3024),
+                register if register == Register::P4 as u8 => Ok(5831),
+                register if register == Register::P5 as u8 => Ok(96),
+                register if register == Register::P6 as u8 => Ok(-7i16 as u16),
+                register if register == Register::P7 as u8 => Ok(9900),
+                register if register == Register::P8 as u8 => Ok(-10230i16 as u16),
+                register if register == Register::P9 as u8 => Ok(4285),
+                register if register == Register::H1 as u8 => Ok(75),
+                register if register == Register::H2 as u8 => Ok(355),
+                register if register == Register::H3 as u8 => Ok(0),
+                register if register == Register::H7 as u8 => Ok(30),
 
-            let nix = LinuxI2CError::Nix(nix::Error::InvalidPath);
-            Err(nix)
+                _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
+            }
         }
 
         // test pressure_reading_should_be_reasonable ... The pressure is: 29.61 in hg.
@@ -292,6 +341,11 @@ mod tests {
     }
 
     #[test]
-    fn fn_set_of_known_calibration_values_should_yield_known_temperature() {
+    fn fn_set_of_known_calibration_values_should_yield_known_temperature() {        
+        let mut device = FakeDevice {};
+        let mut result = Bme280::new(&mut device).unwrap();
+
+        let t = result.read_temperature().unwrap();
+        assert_eq!(t, 67.03);
     }
 }
