@@ -3,6 +3,15 @@ use i2cdev::core::I2CDevice;
 use i2cdev::linux::{LinuxI2CError};
 
 use super::calibration::Calibration;
+use super::register::Register;
+
+const BME280OSAMPLE1 : u8 = 1;
+const BME280OSAMPLE2 : u8 = 2;
+const BME280OSAMPLE4 : u8 = 3;
+const BME280OSAMPLE8 : u8 = 4;
+const BME280OSAMPLE16 : u8 = 5;
+
+const MAX_OVER_SAMPLING_AND_NORMAL_MODE : u8 = 0x3F;
 
 pub struct Bme280<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> {
     calibration: Calibration,
@@ -14,7 +23,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
     pub fn new(dev: &'a mut T) -> Result<Bme280<'a, T>, LinuxI2CError> {
         let cal = try!(Bme280::get_calibration(dev));
-        try!(dev.smbus_write_byte_data(BME280_REGISTER_CONTROL, MAX_OVER_SAMPLING_AND_NORMAL_MODE));
+        try!(dev.smbus_write_byte_data(Register::CONTROL as u8, MAX_OVER_SAMPLING_AND_NORMAL_MODE));
         Ok(Bme280 { calibration: cal, device: dev, mode: BME280OSAMPLE1 })
     }
 
@@ -53,9 +62,9 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     fn read_raw_temp(&mut self) -> Result<f64, LinuxI2CError> { 
-        try!(self.device.smbus_write_byte_data(BME280_REGISTER_CONTROL_HUM, self.mode));
+        try!(self.device.smbus_write_byte_data(Register::CONTROL_HUM as u8, self.mode));
         let meas = self.mode << 5 | self.mode << 2 | 1;
-        try!(self.device.smbus_write_byte_data(BME280_REGISTER_CONTROL, meas));
+        try!(self.device.smbus_write_byte_data(Register::CONTROL as u8, meas));
         let mut sleep_time = 0.00125 + 0.0023 * (1 << self.mode) as f32;
         sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
         sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
@@ -97,9 +106,9 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     fn read_raw_pressure(&mut self) -> Result<u32, LinuxI2CError> {
-        let msb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_PRESSURE_DATA)) as u32;
-        let lsb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_PRESSURE_DATA + 1)) as u32;
-        let xlsb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_PRESSURE_DATA + 2)) as u32;
+        let msb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
+        let lsb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
+        let xlsb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         // println!("Raw is: {}", raw);
         Ok(raw)
@@ -164,84 +173,6 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(in_hg)
     }    
 }
-
-pub enum Register {
-    T1 = 0x88,
-    T2  = 0x8A,
-    T3 = 0x8C,
-
-    P1  = 0x8E,
-    P2  = 0x90,
-    P3  = 0x92,
-    P4  = 0x94,
-    P5  = 0x96,
-    P6  = 0x98,
-    P7 = 0x9A,
-    P8  = 0x9C,
-    P9  = 0x9E,
-
-    H1  = 0xA1,
-    H2  = 0xE1,
-    H3 = 0xE3,
-    H4  = 0xE4,
-    H5  = 0xE5,
-    H6  = 0xE6,
-    H7  = 0xE7,
-
-    CHIPID = 0xD0,
-    VERSION  = 0xD1,
-    SOFTRESET  = 0xE0,
-
-    CONTROL_HUM  = 0xF2,
-    CONTROL  = 0xF4,
-    CONFIG = 0xF5,
-    PRESSURE_DATA = 0xF7,
-    TEMP_DATA = 0xFA,
-    TEMP_DATA_1 = 0xFA + 1,
-    TEMP_DATA_2 = 0xFA + 2,
-    HUMIDITY_DAT  = 0xFD
-}
-
-pub const BME280_REGISTER_DIG_T1 : u8 = 0x88;  // Trimming parameter registers
-const BME280_REGISTER_DIG_T2 : u8 = 0x8A;
-const BME280_REGISTER_DIG_T3 : u8 = 0x8C; 
-
-const BME280_REGISTER_DIG_P1 : u8 = 0x8E;
-const BME280_REGISTER_DIG_P2 : u8 = 0x90;
-const BME280_REGISTER_DIG_P3 : u8 = 0x92;
-const BME280_REGISTER_DIG_P4 : u8 = 0x94;
-const BME280_REGISTER_DIG_P5 : u8 = 0x96;
-const BME280_REGISTER_DIG_P6 : u8 = 0x98;
-const BME280_REGISTER_DIG_P7 : u8 = 0x9A;
-const BME280_REGISTER_DIG_P8 : u8 = 0x9C;
-const BME280_REGISTER_DIG_P9 : u8 = 0x9E;
-
-const BME280_REGISTER_DIG_H1 : u8 = 0xA1;
-const BME280_REGISTER_DIG_H2 : u8 = 0xE1;
-const BME280_REGISTER_DIG_H3 : u8 = 0xE3;
-const BME280_REGISTER_DIG_H4 : u8 = 0xE4;
-const BME280_REGISTER_DIG_H5 : u8 = 0xE5;
-const BME280_REGISTER_DIG_H6 : u8 = 0xE6;
-const BME280_REGISTER_DIG_H7 : u8 = 0xE7;
-
-const BME280_REGISTER_CHIPID : u8 = 0xD0;
-const BME280_REGISTER_VERSION : u8 = 0xD1;
-const BME280_REGISTER_SOFTRESET : u8 = 0xE0;
-
-const BME280_REGISTER_CONTROL_HUM : u8 = 0xF2;
-const BME280_REGISTER_CONTROL : u8 = 0xF4;
-const BME280_REGISTER_CONFIG : u8 = 0xF5;
-const BME280_REGISTER_PRESSURE_DATA : u8 = 0xF7;
-const BME280_REGISTER_TEMP_DATA : u8 = 0xFA;
-const BME280_REGISTER_HUMIDITY_DAT : u8 = 0xFD;
-
-const BME280OSAMPLE1 : u8 = 1;
-const BME280OSAMPLE2 : u8 = 2;
-const BME280OSAMPLE4 : u8 = 3;
-const BME280OSAMPLE8 : u8 = 4;
-const BME280OSAMPLE16 : u8 = 5;
-
-const MAX_OVER_SAMPLING_AND_NORMAL_MODE : u8 = 0x3F;
 
 #[cfg(test)]
 mod tests {
@@ -324,30 +255,15 @@ mod tests {
                 register if register == Register::H2 as u8 => Ok(28960),
                 register if register == Register::H3 as u8 => Ok(28960),
                 register if register == Register::H7 as u8 => Ok(28960),
-
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
             }
         }
 
         fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
              match register {
-                register if register == Register::T1 as u8 => Ok(28960),
-                register if register == Register::T2 as u8 => Ok(26619),
-                register if register == Register::T3 as u8 => Ok(26619),
-                register if register == Register::P1 as u8 => Ok(28960),
-                register if register == Register::P2 as u8 => Ok(28960),
-                register if register == Register::P3 as u8 => Ok(28960),
-                register if register == Register::P4 as u8 => Ok(28960),
-                register if register == Register::P5 as u8 => Ok(28960),
-                register if register == Register::P6 as u8 => Ok(28960),
-                register if register == Register::P7 as u8 => Ok(28960),
-                register if register == Register::P8 as u8 => Ok(28960),
-                register if register == Register::P9 as u8 => Ok(28960),
-                register if register == Register::H1 as u8 => Ok(28960),
-                register if register == Register::H2 as u8 => Ok(28960),
-                register if register == Register::H3 as u8 => Ok(28960),
-                register if register == Register::H7 as u8 => Ok(28960),
-
+                register if register == Register::TEMP_DATA as u8 => Ok(129),
+                register if register == Register::TEMP_DATA_1 as u8 => Ok(143),
+                register if register == Register::TEMP_DATA_2 as u8 => Ok(0),
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
             }
         }
@@ -369,43 +285,26 @@ mod tests {
     }
 }
 
+// test temperature_reading_should_be_reasonable ... Reading calibration:
+// 28960
+// 26619
+// 26619
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// Reading raw temp data:
+// 129
+// 142
+// 0
+// The temperature is: 72.91
 
-// The pressure is: 15.45 in hg.
-// ok
-// test print_the_calibration ... 28960
-// 26619
-// 26619
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// The calibration:
-// Calibration { t1: 28960, t2: 26619, t3: 26619, p1: 28960, p2: 28960, p3: 28960, p4: 28960, p5: 28960, p6: 28960, p7: 28960, p8: 28960, p9: 28960, h1: 28960, h2: 28960, h3: 28960, h7: 28960 }
-// ok
-// test temperature_reading_should_be_reasonable ... 28960
-// 26619
-// 26619
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// The temperature is: 72.81
-// ok
