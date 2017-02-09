@@ -1,5 +1,3 @@
-use std::fmt;
-
 #[derive(Debug)]
 pub struct Calibration {
     // Still need to consider signed-ness and endianness:

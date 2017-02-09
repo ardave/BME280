@@ -23,51 +23,30 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
-        // Still need to consider signed-ness and endianness:
-        // let dig_t1 = try!(dev.smbus_read_word_data(Register::T1 as u8));
-        // let dig_t2 = try!(dev.smbus_read_word_data(Register::T2 as u8));
-        // let dig_t3 = try!(dev.smbus_read_word_data(Register::T3 as u8));
-
-        // let dig_p1 = try!(dev.smbus_read_word_data(Register::P1 as u8));
-        // let dig_p2 = try!(dev.smbus_read_word_data(Register::P2 as u8)) as i16;
-        // let dig_p3 = try!(dev.smbus_read_word_data(Register::P3 as u8));
-        // let dig_p4 = try!(dev.smbus_read_word_data(Register::P4 as u8));
-        // let dig_p5 = try!(dev.smbus_read_word_data(Register::P5 as u8));
-        // let dig_p6 = try!(dev.smbus_read_word_data(Register::P6 as u8)) as i16;
-        // let dig_p7 = try!(dev.smbus_read_word_data(Register::P7 as u8));
-        // let dig_p8 = try!(dev.smbus_read_word_data(Register::P8 as u8)) as i16;
-        // let dig_p9 = try!(dev.smbus_read_word_data(Register::P9 as u8));
-        // let dig_h1 = try!(dev.smbus_read_byte_data(Register::H1 as u8));
-        // let dig_h2 = try!(dev.smbus_read_word_data(Register::H2 as u8));
-        // let dig_h3 = try!(dev.smbus_read_byte_data(Register::H3 as u8));
-        // let dig_h4 = try!(dev.smbus_read_byte_data(Register::H4 as u8));
-        // let dig_h5 = try!(dev.smbus_read_byte_data(Register::H5 as u8)) as i32;
-        // let dig_h6 = try!(dev.smbus_read_byte_data(Register::H6 as u8));
-        // let dig_h7 = try!(dev.smbus_read_byte_data(Register::H7 as u8));
-
+        println!("Reading calibration:");
         Ok(Calibration {
-            t1: try!(Bme280::readOne(dev, Register::T1)),
-            t2: try!(Bme280::readOne(dev, Register::T2)),
-            t3: try!(Bme280::readOne(dev, Register::T2)),
+            t1: try!(Bme280::readWord(dev, Register::T1)),
+            t2: try!(Bme280::readWord(dev, Register::T2)),
+            t3: try!(Bme280::readWord(dev, Register::T2)),
 
-            p1: try!(Bme280::readOne(dev, Register::T1)),
-            p2: try!(Bme280::readOne(dev, Register::T1)),
-            p3: try!(Bme280::readOne(dev, Register::T1)),
-            p4: try!(Bme280::readOne(dev, Register::T1)),
-            p5: try!(Bme280::readOne(dev, Register::T1)),
-            p6: try!(Bme280::readOne(dev, Register::T1)),
-            p7: try!(Bme280::readOne(dev, Register::T1)),
-            p8: try!(Bme280::readOne(dev, Register::T1)),
-            p9: try!(Bme280::readOne(dev, Register::T1)),
+            p1: try!(Bme280::readWord(dev, Register::T1)),
+            p2: try!(Bme280::readWord(dev, Register::T1)),
+            p3: try!(Bme280::readWord(dev, Register::T1)),
+            p4: try!(Bme280::readWord(dev, Register::T1)),
+            p5: try!(Bme280::readWord(dev, Register::T1)),
+            p6: try!(Bme280::readWord(dev, Register::T1)),
+            p7: try!(Bme280::readWord(dev, Register::T1)),
+            p8: try!(Bme280::readWord(dev, Register::T1)),
+            p9: try!(Bme280::readWord(dev, Register::T1)),
 
-            h1: try!(Bme280::readOne(dev, Register::T1)),
-            h2: try!(Bme280::readOne(dev, Register::T1)),
-            h3: try!(Bme280::readOne(dev, Register::T1)),
-            h7: try!(Bme280::readOne(dev, Register::T1))
+            h1: try!(Bme280::readWord(dev, Register::T1)),
+            h2: try!(Bme280::readWord(dev, Register::T1)),
+            h3: try!(Bme280::readWord(dev, Register::T1)),
+            h7: try!(Bme280::readWord(dev, Register::T1))
         })
     }
 
-    fn readOne(dev: &mut T, register: Register) -> Result<i16, LinuxI2CError> {
+    fn readWord(dev: &mut T, register: Register) -> Result<i16, LinuxI2CError> {
         let dig = try!(dev.smbus_read_word_data(register as u8));
         println!("{}", dig);
         Ok(dig as i16)
@@ -82,11 +61,19 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
         let dur = time::Duration::from_millis((sleep_time * 1000.0) as u64);
         thread::sleep(dur);
-        let msb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA)) as u64;
-        let lsb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA + 1)) as u64;
-        let xlsb = try!(self.device.smbus_read_byte_data(BME280_REGISTER_TEMP_DATA + 2)) as u64;
+        
+        println!("Reading raw temp data:");
+        let msb = try!(self.readByteData(Register::TEMP_DATA));
+        let lsb = try!(self.readByteData(Register::TEMP_DATA_1));
+        let xlsb = try!(self.readByteData(Register::TEMP_DATA_2));
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         Ok(raw as f64)
+    }
+
+    fn readByteData(&mut self, register: Register) -> Result<u64, LinuxI2CError> {
+        let val = try!(self.device.smbus_read_byte_data(register as u8));
+        println!("{}", val);
+        Ok(val as u64)
     }
 
     fn calc_t_fine(&mut self) -> Result<f64, LinuxI2CError> {
@@ -210,6 +197,8 @@ pub enum Register {
     CONFIG = 0xF5,
     PRESSURE_DATA = 0xF7,
     TEMP_DATA = 0xFA,
+    TEMP_DATA_1 = 0xFA + 1,
+    TEMP_DATA_2 = 0xFA + 2,
     HUMIDITY_DAT  = 0xFD
 }
 
@@ -321,20 +310,43 @@ mod tests {
             match register {
                 register if register == Register::T1 as u8 => Ok(28960),
                 register if register == Register::T2 as u8 => Ok(26619),
-                register if register == Register::T3 as u8 => Ok(50),
-                register if register == Register::P1 as u8 => Ok(-10713i16 as u16),
-                register if register == Register::P2 as u8 => Ok(-10713i16 as u16),
-                register if register == Register::P3 as u8 => Ok(3024),
-                register if register == Register::P4 as u8 => Ok(5831),
-                register if register == Register::P5 as u8 => Ok(96),
-                register if register == Register::P6 as u8 => Ok(-7i16 as u16),
-                register if register == Register::P7 as u8 => Ok(9900),
-                register if register == Register::P8 as u8 => Ok(-10230i16 as u16),
-                register if register == Register::P9 as u8 => Ok(4285),
-                register if register == Register::H1 as u8 => Ok(75),
-                register if register == Register::H2 as u8 => Ok(355),
-                register if register == Register::H3 as u8 => Ok(0),
-                register if register == Register::H7 as u8 => Ok(30),
+                register if register == Register::T3 as u8 => Ok(26619),
+                register if register == Register::P1 as u8 => Ok(28960),
+                register if register == Register::P2 as u8 => Ok(28960),
+                register if register == Register::P3 as u8 => Ok(28960),
+                register if register == Register::P4 as u8 => Ok(28960),
+                register if register == Register::P5 as u8 => Ok(28960),
+                register if register == Register::P6 as u8 => Ok(28960),
+                register if register == Register::P7 as u8 => Ok(28960),
+                register if register == Register::P8 as u8 => Ok(28960),
+                register if register == Register::P9 as u8 => Ok(28960),
+                register if register == Register::H1 as u8 => Ok(28960),
+                register if register == Register::H2 as u8 => Ok(28960),
+                register if register == Register::H3 as u8 => Ok(28960),
+                register if register == Register::H7 as u8 => Ok(28960),
+
+                _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
+            }
+        }
+
+        fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
+             match register {
+                register if register == Register::T1 as u8 => Ok(28960),
+                register if register == Register::T2 as u8 => Ok(26619),
+                register if register == Register::T3 as u8 => Ok(26619),
+                register if register == Register::P1 as u8 => Ok(28960),
+                register if register == Register::P2 as u8 => Ok(28960),
+                register if register == Register::P3 as u8 => Ok(28960),
+                register if register == Register::P4 as u8 => Ok(28960),
+                register if register == Register::P5 as u8 => Ok(28960),
+                register if register == Register::P6 as u8 => Ok(28960),
+                register if register == Register::P7 as u8 => Ok(28960),
+                register if register == Register::P8 as u8 => Ok(28960),
+                register if register == Register::P9 as u8 => Ok(28960),
+                register if register == Register::H1 as u8 => Ok(28960),
+                register if register == Register::H2 as u8 => Ok(28960),
+                register if register == Register::H3 as u8 => Ok(28960),
+                register if register == Register::H7 as u8 => Ok(28960),
 
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
             }
@@ -347,7 +359,7 @@ mod tests {
 
     }
 
-    // #[test]
+    #[test]
     fn fn_set_of_known_calibration_values_should_yield_known_temperature() {        
         let mut device = FakeDevice {};
         let mut result = Bme280::new(&mut device).unwrap();
@@ -356,3 +368,44 @@ mod tests {
         assert_eq!(t, 67.03);
     }
 }
+
+
+// The pressure is: 15.45 in hg.
+// ok
+// test print_the_calibration ... 28960
+// 26619
+// 26619
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// The calibration:
+// Calibration { t1: 28960, t2: 26619, t3: 26619, p1: 28960, p2: 28960, p3: 28960, p4: 28960, p5: 28960, p6: 28960, p7: 28960, p8: 28960, p9: 28960, h1: 28960, h2: 28960, h3: 28960, h7: 28960 }
+// ok
+// test temperature_reading_should_be_reasonable ... 28960
+// 26619
+// 26619
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// 28960
+// The temperature is: 72.81
+// ok
