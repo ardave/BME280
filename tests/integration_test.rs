@@ -61,5 +61,6 @@ fn print_the_calibration() {
     let mut device = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
     let mut bme = Bme280::new(&mut device).unwrap();
 
+    println!("The calibration:");
     bme.print_calibration();
 }

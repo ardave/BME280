@@ -19,51 +19,58 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     pub fn print_calibration(&mut self) {
-        println!("{}", self.calibration);
+        println!("{:?}", self.calibration);
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
         // Still need to consider signed-ness and endianness:
-        let dig_t1 = try!(dev.smbus_read_word_data(Register::T1 as u8));
-        let dig_t2 = try!(dev.smbus_read_word_data(Register::T2 as u8));
-        let dig_t3 = try!(dev.smbus_read_word_data(Register::T3 as u8));
+        // let dig_t1 = try!(dev.smbus_read_word_data(Register::T1 as u8));
+        // let dig_t2 = try!(dev.smbus_read_word_data(Register::T2 as u8));
+        // let dig_t3 = try!(dev.smbus_read_word_data(Register::T3 as u8));
 
-        let dig_p1 = try!(dev.smbus_read_word_data(Register::P1 as u8));
-        let dig_p2 = try!(dev.smbus_read_word_data(Register::P2 as u8)) as i16;
-        let dig_p3 = try!(dev.smbus_read_word_data(Register::P3 as u8));
-        let dig_p4 = try!(dev.smbus_read_word_data(Register::P4 as u8));
-        let dig_p5 = try!(dev.smbus_read_word_data(Register::P5 as u8));
-        let dig_p6 = try!(dev.smbus_read_word_data(Register::P6 as u8)) as i16;
-        let dig_p7 = try!(dev.smbus_read_word_data(Register::P7 as u8));
-        let dig_p8 = try!(dev.smbus_read_word_data(Register::P8 as u8)) as i16;
-        let dig_p9 = try!(dev.smbus_read_word_data(Register::P9 as u8));
-        let dig_h1 = try!(dev.smbus_read_byte_data(Register::H1 as u8));
-        let dig_h2 = try!(dev.smbus_read_word_data(Register::H2 as u8));
-        let dig_h3 = try!(dev.smbus_read_byte_data(Register::H3 as u8));
-        let dig_h4 = try!(dev.smbus_read_byte_data(Register::H4 as u8));
-        let dig_h5 = try!(dev.smbus_read_byte_data(Register::H5 as u8)) as i32;
-        let dig_h6 = try!(dev.smbus_read_byte_data(Register::H6 as u8));
-        let dig_h7 = try!(dev.smbus_read_byte_data(Register::H7 as u8));
+        // let dig_p1 = try!(dev.smbus_read_word_data(Register::P1 as u8));
+        // let dig_p2 = try!(dev.smbus_read_word_data(Register::P2 as u8)) as i16;
+        // let dig_p3 = try!(dev.smbus_read_word_data(Register::P3 as u8));
+        // let dig_p4 = try!(dev.smbus_read_word_data(Register::P4 as u8));
+        // let dig_p5 = try!(dev.smbus_read_word_data(Register::P5 as u8));
+        // let dig_p6 = try!(dev.smbus_read_word_data(Register::P6 as u8)) as i16;
+        // let dig_p7 = try!(dev.smbus_read_word_data(Register::P7 as u8));
+        // let dig_p8 = try!(dev.smbus_read_word_data(Register::P8 as u8)) as i16;
+        // let dig_p9 = try!(dev.smbus_read_word_data(Register::P9 as u8));
+        // let dig_h1 = try!(dev.smbus_read_byte_data(Register::H1 as u8));
+        // let dig_h2 = try!(dev.smbus_read_word_data(Register::H2 as u8));
+        // let dig_h3 = try!(dev.smbus_read_byte_data(Register::H3 as u8));
+        // let dig_h4 = try!(dev.smbus_read_byte_data(Register::H4 as u8));
+        // let dig_h5 = try!(dev.smbus_read_byte_data(Register::H5 as u8)) as i32;
+        // let dig_h6 = try!(dev.smbus_read_byte_data(Register::H6 as u8));
+        // let dig_h7 = try!(dev.smbus_read_byte_data(Register::H7 as u8));
+
         Ok(Calibration {
-            t1: dig_t1,
-            t2: dig_t2,
-            t3: dig_t3,
+            t1: try!(Bme280::readOne(dev, Register::T1)),
+            t2: try!(Bme280::readOne(dev, Register::T2)),
+            t3: try!(Bme280::readOne(dev, Register::T2)),
 
-            p1: dig_p1,
-            p2: dig_p2,
-            p3: dig_p3,
-            p4: dig_p4,
-            p5: dig_p5,
-            p6: dig_p6,
-            p7: dig_p7,
-            p8: dig_p8,
-            p9: dig_p9,
+            p1: try!(Bme280::readOne(dev, Register::T1)),
+            p2: try!(Bme280::readOne(dev, Register::T1)),
+            p3: try!(Bme280::readOne(dev, Register::T1)),
+            p4: try!(Bme280::readOne(dev, Register::T1)),
+            p5: try!(Bme280::readOne(dev, Register::T1)),
+            p6: try!(Bme280::readOne(dev, Register::T1)),
+            p7: try!(Bme280::readOne(dev, Register::T1)),
+            p8: try!(Bme280::readOne(dev, Register::T1)),
+            p9: try!(Bme280::readOne(dev, Register::T1)),
 
-            h1: dig_h1,
-            h2: dig_h2,
-            h3: dig_h3,
-            h7: dig_h7
+            h1: try!(Bme280::readOne(dev, Register::T1)),
+            h2: try!(Bme280::readOne(dev, Register::T1)),
+            h3: try!(Bme280::readOne(dev, Register::T1)),
+            h7: try!(Bme280::readOne(dev, Register::T1))
         })
+    }
+
+    fn readOne(dev: &mut T, register: Register) -> Result<i16, LinuxI2CError> {
+        let dig = try!(dev.smbus_read_word_data(register as u8));
+        println!("{}", dig);
+        Ok(dig as i16)
     }
 
     fn read_raw_temp(&mut self) -> Result<f64, LinuxI2CError> { 
