@@ -181,7 +181,8 @@ mod tests {
     use i2cdev::linux::{LinuxI2CError};
     use std::io::{Error, ErrorKind};
     use nix;
-    use bme280::{Bme280, Register};
+    use bme280::{Bme280};
+    use super::super::register::Register;
 
     struct FakeDevice {
 

@@ -17,7 +17,7 @@ pub enum Register {
     H2  = 0xE1,
     H3 = 0xE3,
     H4  = 0xE4,
-    H5  = 0xE5,
+    H5  = 0xE5, 
     H6  = 0xE6,
     H7  = 0xE7,
 
