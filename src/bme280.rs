@@ -263,17 +263,11 @@ mod tests {
         fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
              match register {
                 register if register == Register::TEMP_DATA as u8 => Ok(129),
-                register if register == Register::TEMP_DATA_1 as u8 => Ok(143),
+                register if register == Register::TEMP_DATA_1 as u8 => Ok(142),
                 register if register == Register::TEMP_DATA_2 as u8 => Ok(0),
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
             }
         }
-
-        // test pressure_reading_should_be_reasonable ... The pressure is: 29.61 in hg.
-        // test print_the_calibration ... (t1:28960, t2:26619, t3:50, p1:-10713, p2:-10713, p3:3024, p4:5831, p5:96, p6:-7, p7:9900, p8:-10230, p9:4285, h1:75, h2:355, h3:0, h7:30)
-        // test temperature_reading_should_be_reasonable ... The temperature is: 67.03
-
-
     }
 
     #[test]
@@ -282,7 +276,7 @@ mod tests {
         let mut result = Bme280::new(&mut device).unwrap();
 
         let t = result.read_temperature().unwrap();
-        assert_eq!(t, 67.03);
+        assert_eq!(t, 72.91);
     }
 }
 
@@ -308,4 +302,10 @@ mod tests {
 // 142
 // 0
 // The temperature is: 72.91
+
+
+
+// test pressure_reading_should_be_reasonable ... The pressure is: 29.61 in hg.
+// test print_the_calibration ... (t1:28960, t2:26619, t3:50, p1:-10713, p2:-10713, p3:3024, p4:5831, p5:96, p6:-7, p7:9900, p8:-10230, p9:4285, h1:75, h2:355, h3:0, h7:30)
+// test temperature_reading_should_be_reasonable ... The temperature is: 67.03
 
