@@ -6,4 +6,3 @@ authors = ["Dave Falkner <ardave@gmail.com>"]
 [dependencies]
 i2cdev = "0.3.1"
 nix = "^0.6.0"
-assert_approx_eq = "0.2.2"

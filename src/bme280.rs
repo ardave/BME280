@@ -5,6 +5,7 @@ use i2cdev::linux::{LinuxI2CError};
 use super::calibration::Calibration;
 use super::register::Register;
 
+
 const BME280OSAMPLE1 : u8 = 1;
 const BME280OSAMPLE2 : u8 = 2;
 const BME280OSAMPLE4 : u8 = 3;
@@ -276,7 +277,7 @@ mod tests {
         let mut result = Bme280::new(&mut device).unwrap();
 
         let t = result.read_temperature().unwrap();
-        assert_eq!(t, 72.91);
+        assert!((t - 72.91).abs() < 0.01);
     }
 }
 
