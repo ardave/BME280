@@ -280,6 +280,7 @@ mod tests {
         let mut bme = Bme280::new(&mut device).unwrap();
 
         let t = bme.read_temperature().unwrap();
+        println!("Temperature is: {}", t);
         assert!((t - 72.91).abs() < 0.01);
     }
 
@@ -289,6 +290,7 @@ mod tests {
         let mut bme = Bme280::new(&mut device).unwrap();
 
         let p = bme.read_pressure().unwrap();
+        println!("Pressure is: {} inhg.", p);
         assert!((p - 30.04).abs() < 0.01);
     }
 }
