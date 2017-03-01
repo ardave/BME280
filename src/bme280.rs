@@ -76,6 +76,9 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let msb = try!(self.readByteData(Register::TEMP_DATA));
         let lsb = try!(self.readByteData(Register::TEMP_DATA_1));
         let xlsb = try!(self.readByteData(Register::TEMP_DATA_2));
+        println!("msb: {}", msb);
+        println!("lsb: {}", lsb);
+        println!("xlsb: {}", xlsb);
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         Ok(raw as f64)
     }
