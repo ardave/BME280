@@ -5,8 +5,8 @@ sensor = BME280(mode=BME280_OSAMPLE_8, busnum=2)
 # pascals = sensor.read_pressure()
 degrees = sensor.read_temperature()
 
-hectopascals = pascals / 100
-inhg = hectopascals / 33.8638866667
+# hectopascals = pascals / 100
+# inhg = hectopascals / 33.8638866667
 # humidity = sensor.read_humidity()
 
 # print 'Timestamp = {0:0.3f}'.format(sensor.t_fine)
