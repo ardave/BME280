@@ -113,8 +113,11 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let msb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
         let lsb = try!(self.readByteData(Register::PRESSURE_DATA_1)) as u32;
         let xlsb = try!(self.readByteData(Register::PRESSURE_DATA_2)) as u32;
+        println!("msb: {}", msb);
+        println!("lsb: {}", lsb);
+        println!("xlsb: {}", xlsb);
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
-        // println!("Raw is: {}", raw);
+        println!("Raw is: {}", raw);
         Ok(raw)
     }
 
