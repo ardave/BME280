@@ -111,8 +111,8 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
     fn read_raw_pressure(&mut self) -> Result<u32, LinuxI2CError> {
         let msb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
-        let lsb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
-        let xlsb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
+        let lsb = try!(self.readByteData(Register::PRESSURE_DATA_1)) as u32;
+        let xlsb = try!(self.readByteData(Register::PRESSURE_DATA_2)) as u32;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         // println!("Raw is: {}", raw);
         Ok(raw)
