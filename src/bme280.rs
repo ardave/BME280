@@ -107,16 +107,15 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     fn read_raw_pressure(&mut self) -> Result<u32, LinuxI2CError> {
-        let msb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
-        let lsb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
-        let xlsb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
+        let msb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
+        let lsb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
+        let xlsb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         // println!("Raw is: {}", raw);
         Ok(raw)
     }
 
-    pub fn 
-    read_pressure(&mut self) -> Result<f64, LinuxI2CError> {
+    pub fn read_pressure(&mut self) -> Result<f64, LinuxI2CError> {
         let p1 = self.calibration.p1 as f64;
         let p2 = self.calibration.p2 as f64;
         let p3 = self.calibration.p3 as f64;
@@ -267,6 +266,9 @@ mod tests {
                 register if register == Register::TEMP_DATA as u8 => Ok(129),
                 register if register == Register::TEMP_DATA_1 as u8 => Ok(142),
                 register if register == Register::TEMP_DATA_2 as u8 => Ok(0),
+                register if register == Register::PRESSURE_DATA as u8 => Ok(0),
+                register if register == Register::PRESSURE_DATA_1 as u8 => Ok(0),
+                register if register == Register::PRESSURE_DATA_2 as u8 => Ok(0),
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
             }
         }
@@ -275,18 +277,18 @@ mod tests {
     #[test]
     fn set_of_known_calibration_values_should_yield_known_temperature() {        
         let mut device = FakeDevice {};
-        let mut result = Bme280::new(&mut device).unwrap();
+        let mut bme = Bme280::new(&mut device).unwrap();
 
-        let t = result.read_temperature().unwrap();
+        let t = bme.read_temperature().unwrap();
         assert!((t - 72.91).abs() < 0.01);
     }
 
     #[test]
     fn set_of_known_calibration_values_should_yield_known_pressure() {
         let mut device = FakeDevice {};
-        let mut result = Bme280::new(&mut device).unwrap();
+        let mut bme = Bme280::new(&mut device).unwrap();
 
-        let p = result.read_pressure().unwrap();
+        let p = bme.read_pressure().unwrap();
         assert!((p - 72.91).abs() < 0.01);
     }
 }
