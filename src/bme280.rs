@@ -39,15 +39,15 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
             t2: try!(Bme280::readWord(dev, Register::T2)),
             t3: try!(Bme280::readWord(dev, Register::T2)),
 
-            p1: try!(Bme280::readWord(dev, Register::T1)),
-            p2: try!(Bme280::readWord(dev, Register::T1)),
-            p3: try!(Bme280::readWord(dev, Register::T1)),
-            p4: try!(Bme280::readWord(dev, Register::T1)),
-            p5: try!(Bme280::readWord(dev, Register::T1)),
-            p6: try!(Bme280::readWord(dev, Register::T1)),
-            p7: try!(Bme280::readWord(dev, Register::T1)),
-            p8: try!(Bme280::readWord(dev, Register::T1)),
-            p9: try!(Bme280::readWord(dev, Register::T1)),
+            p1: try!(Bme280::readWord(dev, Register::P1)),
+            p2: try!(Bme280::readWord(dev, Register::P2)),
+            p3: try!(Bme280::readWord(dev, Register::P3)),
+            p4: try!(Bme280::readWord(dev, Register::P4)),
+            p5: try!(Bme280::readWord(dev, Register::P5)),
+            p6: try!(Bme280::readWord(dev, Register::P6)),
+            p7: try!(Bme280::readWord(dev, Register::P7)),
+            p8: try!(Bme280::readWord(dev, Register::P8)),
+            p9: try!(Bme280::readWord(dev, Register::P9)),
 
             h1: try!(Bme280::readWord(dev, Register::T1)),
             h2: try!(Bme280::readWord(dev, Register::T1)),
@@ -115,7 +115,8 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(raw)
     }
 
-    pub fn read_pressure(&mut self) -> Result<f64, LinuxI2CError> {
+    pub fn 
+    read_pressure(&mut self) -> Result<f64, LinuxI2CError> {
         let p1 = self.calibration.p1 as f64;
         let p2 = self.calibration.p2 as f64;
         let p3 = self.calibration.p3 as f64;
@@ -128,46 +129,46 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
         let adc = try!(self.read_raw_pressure()) as f64;
         let t_fine = try!(self.calc_t_fine());
-        // println!("t_fine: {}", t_fine);
+        println!("t_fine: {}", t_fine);
         
         let var1 = t_fine / 2.0 - 64000.0;
-        // println!("var1: {}", var1);
+        println!("var1: {}", var1);
 
         let var2 = var1 * var1 * p6 / 32768.0;
-        // println!("var2: {}", var2);
+        println!("var2: {}", var2);
 
         let var2_2 = var2 + var1 * p5 * 2.0;
-        // println!("var2_2: {}", var2_2);
+        println!("var2_2: {}", var2_2);
     
         let var2_3 = var2_2 / 4.0 + p4 * 65536.0;
-        // println!("var2_3: {}", var2_3);
+        println!("var2_3: {}", var2_3);
 
         let var1_2 = (p3 * var1 * var1 / 524288.0 + p2 * var1) / 524288.0;
-        // println!("var1_2: {}", var1_2);
+        println!("var1_2: {}", var1_2);
 
         let var1_3 = (1.0 + var1_2 / 32768.0) * p1;
-        // println!("var1_3: {}", var1_3);
+        println!("var1_3: {}", var1_3);
 
         if var1_3 == 0.0 {
             return Ok(0.0);
         }
 
         let p = 1048576.0 - adc;
-        // println!("p: {}", p);
+        println!("p: {}", p);
 
         let p_2 = ((p - var2_3 / 4096.0) * 6250.0) / var1_3;
-        // println!("p_2: {}", p_2);
+        println!("p_2: {}", p_2);
 
         let var1_4 = p9 * p_2 * p_2 / 2147483648.0;
-        // println!("var1_4: {}", var1_4);
+        println!("var1_4: {}", var1_4);
 
         let var2_4 = p_2 * p8 / 32768.0;
-        // println!("var2_4: {}", var2_4);
+        println!("var2_4: {}", var2_4);
 
         let pascals = p_2 + (var1_4 + var2_4 + p7) / 16.0;
-        // println!("pascals: {}", pascals);
+        println!("pascals: {}", pascals);
 
-        // println!("Calibration: {}", self.Calibration);
+        // println!("Calibration: {}", self.calibration);
 
         let in_hg = pascals *  0.000295299830714;
 
@@ -272,12 +273,21 @@ mod tests {
     }
 
     #[test]
-    fn fn_set_of_known_calibration_values_should_yield_known_temperature() {        
+    fn set_of_known_calibration_values_should_yield_known_temperature() {        
         let mut device = FakeDevice {};
         let mut result = Bme280::new(&mut device).unwrap();
 
         let t = result.read_temperature().unwrap();
         assert!((t - 72.91).abs() < 0.01);
+    }
+
+    #[test]
+    fn set_of_known_calibration_values_should_yield_known_pressure() {
+        let mut device = FakeDevice {};
+        let mut result = Bme280::new(&mut device).unwrap();
+
+        let p = result.read_pressure().unwrap();
+        assert!((p - 72.91).abs() < 0.01);
     }
 }
 
