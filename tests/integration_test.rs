@@ -42,6 +42,7 @@ fn temperature_reading_should_be_reasonable() {
 }
 
 #[test]
+#[ignore]
 fn pressure_reading_should_be_reasonable() {
     let i2c_addr = 0x77;
     let busnum = 2;

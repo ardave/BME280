@@ -248,7 +248,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn set_of_known_calibration_values_should_yield_known_temperature() {        
         let mut device = FakeDevice {};
         let mut bme = Bme280::new(&mut device).unwrap();
@@ -259,7 +258,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn set_of_known_calibration_values_should_yield_known_pressure() {
         let mut device = FakeDevice {};
         let mut bme = Bme280::new(&mut device).unwrap();
