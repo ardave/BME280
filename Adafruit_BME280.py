@@ -148,10 +148,6 @@ class BME280(object):
         lsb = self._device.readU8(BME280_REGISTER_TEMP_DATA + 1)
         xlsb = self._device.readU8(BME280_REGISTER_TEMP_DATA + 2)
         raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4
-        print "temperature msb: {0}".format(msb)
-        print "temperature lsb: {0}".format(lsb)
-        print "temperature xlsb: {0}".format(xlsb)
-        print 'temperature Raw is: {0}'.format(raw)
         return raw
 
     def read_raw_pressure(self):
@@ -162,10 +158,6 @@ class BME280(object):
         lsb = self._device.readU8(BME280_REGISTER_PRESSURE_DATA + 1)
         xlsb = self._device.readU8(BME280_REGISTER_PRESSURE_DATA + 2)
         raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4
-        print "pressure msb: {0}".format(msb)
-        print "pressure lsb: {0}".format(lsb)
-        print "pressure xlsb: {0}".format(xlsb)
-        print 'presure Raw is: {0}'.format(raw)
         return raw
 
     def read_raw_humidity(self):
@@ -185,51 +177,25 @@ class BME280(object):
         UT / 131072.0 - self.dig_T1 / 8192.0)) * float(self.dig_T3)
         self.t_fine = int(var1 + var2)
         temp = (var1 + var2) / 5120.0
-        print "UT: {0}".format(UT)
-        print "var1: {0}".format(var1)
-        print "var2: {0}".format(var2)      
-        print "t1: {0}".format(self.dig_T1)
-        print "t2: {0}".format(float(self.dig_T2))
-        print "t3: {0}".format(float(self.dig_T3))
         return temp
 
     def read_pressure(self):
         """Gets the compensated pressure in Pascals."""
         adc = self.read_raw_pressure()
-        print "dig_p6: {0}".format(self.dig_P6)
-        print "adc: {0}".format(adc)
-        print "t_fine is {0}".format(self.t_fine)
         var1 = self.t_fine / 2.0 - 64000.0
-        print "var1: {0}".format(var1)
-        print "dig_p6: {0}".format(self.dig_P6)
         var2 = var1 * var1 * self.dig_P6 / 32768.0
-        print "var2: {0}".format(var2)
-        print "dig_p5: {0}".format(self.dig_P5)
         var2 = var2 + var1 * self.dig_P5 * 2.0
-        print "var2_2: {0}".format(var2)
         var2 = var2 / 4.0 + self.dig_P4 * 65536.0
-        print "dig_p2: {0}".format(self.dig_P2)
-        print "dig_P3: {0}".format(self.dig_P3)
-        print "var2_3: {0}".format(var2)        
         var1 = (
                self.dig_P3 * var1 * var1 / 524288.0 + self.dig_P2 * var1) / 524288.0
-        print "var1_2: {0}".format(var1)
         var1 = (1.0 + var1 / 32768.0) * self.dig_P1
-        print "var1_3: {0}".format(var1)
         if var1 == 0:
             return 0
         p = 1048576.0 - adc
-        print "p: {0}".format(p)
         p = ((p - var2 / 4096.0) * 6250.0) / var1
-        print "p_2: {0}".format(p)
-        print "dig_P9: {0}".format(self.dig_P9)
         var1 = self.dig_P9 * p * p / 2147483648.0
-        print "var1_4: {0}".format(var1)
-        print "dig_P8: {0}".format(self.dig_P8)
         var2 = p * self.dig_P8 / 32768.0
-        print "var2_4: {0}".format(var2)
         p = p + (var1 + var2 + self.dig_P7) / 16.0
-        print "p_3: {0}".format(p)
         return p
 
     def read_humidity(self):

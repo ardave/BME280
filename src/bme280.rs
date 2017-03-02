@@ -32,7 +32,6 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
-        println!("Reading calibration:");
         Ok(Calibration {
             t1: try!(Bme280::readWord(dev, Register::T1)),
             t2: try!(Bme280::readWord(dev, Register::T2)),
@@ -57,7 +56,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
     fn readWord(dev: &mut T, register: Register) -> Result<i16, LinuxI2CError> {
         let dig = try!(dev.smbus_read_word_data(register as u8));
-        println!("{}", dig);
+        // println!("{}", dig);
         Ok(dig as i16)
     }
 
@@ -71,21 +70,16 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let dur = time::Duration::from_millis((sleep_time * 1000.0) as u64);
         thread::sleep(dur);
         
-        println!("Reading raw temp data:");
         let msb = try!(self.readByteData(Register::TEMP_DATA));
         let lsb = try!(self.readByteData(Register::TEMP_DATA_1));
         let xlsb = try!(self.readByteData(Register::TEMP_DATA_2));
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
-        println!("temperature msb: {}", msb);
-        println!("temperature lsb: {}", lsb);
-        println!("temperature xlsb: {}", xlsb);
-        println!("temperature Raw is: {}", raw);
         Ok(raw as f64)
     }
 
     fn readByteData(&mut self, register: Register) -> Result<u64, LinuxI2CError> {
         let val = try!(self.device.smbus_read_byte_data(register as u8));
-        println!("{}", val);
+        // println!("{}", val);
         Ok(val as u64)
     }
 
@@ -97,12 +91,6 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let var1 = (ut / 16384.0 - t1 / 1024.0) * t2;
         let var2 = ((ut / 131072.0 - t1 / 8192.0) * (ut / 131072.0 - t1 / 8192.0)) * t3;
         let t_fine = var1 + var2;
-        println!("ut: {}", ut);
-        println!("t1: {}", t1);
-        println!("t2: {}", t2);
-        println!("t3: {}", t3);
-        println!("var1: {}", var1);
-        println!("var2: {}", var2);
         Ok(t_fine)
     }
 
@@ -120,10 +108,6 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let lsb = try!(self.readByteData(Register::PRESSURE_DATA_1)) as u32;
         let xlsb = try!(self.readByteData(Register::PRESSURE_DATA_2)) as u32;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
-        println!("pressure msb: {}", msb);
-        println!("pressure lsb: {}", lsb);
-        println!("pressure xlsb: {}", xlsb);
-        println!("pressure Raw is: {}", raw);
         Ok(raw)
     }
 
@@ -140,49 +124,23 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
         let adc = try!(self.read_raw_pressure()) as f64;
         let t_fine = try!(self.calc_t_fine());
-        println!("t_fine: {}", t_fine);
-        
         let var1 = t_fine / 2.0 - 64000.0;
-        println!("var1: {}", var1);
-
         let var2 = var1 * var1 * p6 / 32768.0;
-        println!("var2: {}", var2);
-
         let var2_2 = var2 + var1 * p5 * 2.0;
-        println!("var2_2: {}", var2_2);
-    
         let var2_3 = var2_2 / 4.0 + p4 * 65536.0;
-        println!("var2_3: {}", var2_3);
-
         let var1_2 = (p3 * var1 * var1 / 524288.0 + p2 * var1) / 524288.0;
-        println!("var1_2: {}", var1_2);
-
         let var1_3 = (1.0 + var1_2 / 32768.0) * p1;
-        println!("var1_3: {}", var1_3);
-
+        
         if var1_3 == 0.0 {
             return Ok(0.0);
         }
 
         let p = 1048576.0 - adc;
-        println!("p: {}", p);
-
         let p_2 = ((p - var2_3 / 4096.0) * 6250.0) / var1_3;
-        println!("p_2: {}", p_2);
-
         let var1_4 = p9 * p_2 * p_2 / 2147483648.0;
-        println!("var1_4: {}", var1_4);
-
         let var2_4 = p_2 * p8 / 32768.0;
-        println!("var2_4: {}", var2_4);
-
-        let pascals = p_2 + (var1_4 + var2_4 + p7) / 16.0;
-        println!("pascals: {}", pascals);
-
-        // println!("Calibration: {}", self.calibration);
-
+        let pascals = p_2 + (var1_4 + var2_4 + p7) / 16.0;        
         let in_hg = pascals *  0.000295299830714;
-
         Ok(in_hg)
     }    
 }
@@ -309,32 +267,4 @@ mod tests {
     }
 }
 
-// test temperature_reading_should_be_reasonable ... Reading calibration:
-// 28960
-// 26619
-// 26619
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// 28960
-// Reading raw temp data:
-// 129
-// 142
-// 0
-// The temperature is: 72.91
-
-
-
-// test pressure_reading_should_be_reasonable ... The pressure is: 29.61 in hg.
-// test print_the_calibration ... (t1:28960, t2:26619, t3:50, p1:-10713, p2:-10713, p3:3024, p4:5831, p5:96, p6:-7, p7:9900, p8:-10230, p9:4285, h1:75, h2:355, h3:0, h7:30)
-// test temperature_reading_should_be_reasonable ... The temperature is: 67.03
 
