@@ -121,10 +121,10 @@ class BME280(object):
         self.dig_H5 = h5 | (
         self._device.readU8(BME280_REGISTER_DIG_H5) >> 4 & 0x0F)
 
-        members = [attr for attr in dir(self) if not callable(getattr(self, attr)) and attr.startswith("dig_")]
-	print members
-        members = [getattr(self, attr) for attr in dir(self) if not callable(getattr(self, attr)) and attr.startswith("dig_")]
-        print members 
+        for attr in dir(self):
+            if attr.startswith("dig_") and not callable(getattr(self, attr)):
+                print "{0}: {1}".format(attr, getattr(self, attr))
+
 
         '''
         print '0xE4 = {0:2x}'.format (self._device.readU8 (BME280_REGISTER_DIG_H4))
