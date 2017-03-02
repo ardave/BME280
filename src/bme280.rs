@@ -181,127 +181,127 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }    
 }
 
-// #[cfg(test)]
-// mod tests {
+#[cfg(test)]
+mod tests {
 
-//     use i2cdev::core::I2CDevice;
-//     use i2cdev::linux::{LinuxI2CError};
-//     use std::io::{Error, ErrorKind};
-//     use nix;
-//     use bme280::{Bme280};
-//     use super::super::register::Register;
+    use i2cdev::core::I2CDevice;
+    use i2cdev::linux::{LinuxI2CError};
+    use std::io::{Error, ErrorKind};
+    use nix;
+    use bme280::{Bme280};
+    use super::super::register::Register;
 
-//     struct FakeDevice {
+    struct FakeDevice {
 
-//     }
+    }
 
-//     impl I2CDevice for FakeDevice {
-//         type Error = LinuxI2CError;
+    impl I2CDevice for FakeDevice {
+        type Error = LinuxI2CError;
 
-//         /// Read data from the device to fill the provided slice
-//         fn read(&mut self, data: &mut [u8]) -> Result<(), Self::Error> {
-//             Ok(())
-//         }
+        /// Read data from the device to fill the provided slice
+        fn read(&mut self, data: &mut [u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
 
-//         /// Write the provided buffer to the device
-//         fn write(&mut self, data: &[u8]) -> Result<(), Self::Error> {
-//             Ok(())
-//         }
+        /// Write the provided buffer to the device
+        fn write(&mut self, data: &[u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
 
-//         /// This sends a single bit to the device, at the place of the Rd/Wr bit
-//         fn smbus_write_quick(&mut self, bit: bool) -> Result<(), Self::Error> {
-//             Ok(())
-//         }
+        /// This sends a single bit to the device, at the place of the Rd/Wr bit
+        fn smbus_write_quick(&mut self, bit: bool) -> Result<(), Self::Error> {
+            Ok(())
+        }
 
-//         /// Read a block of up to 32 bytes from a device
-//         ///
-//         /// The actual number of bytes available to read is returned in the count
-//         /// byte.  This code returns a correctly sized vector containing the
-//         /// count bytes read from the device.
-//         fn smbus_read_block_data(&mut self, register: u8) -> Result<Vec<u8>, Self::Error> {
-//             Ok(vec![1,2,3])
-//         }
+        /// Read a block of up to 32 bytes from a device
+        ///
+        /// The actual number of bytes available to read is returned in the count
+        /// byte.  This code returns a correctly sized vector containing the
+        /// count bytes read from the device.
+        fn smbus_read_block_data(&mut self, register: u8) -> Result<Vec<u8>, Self::Error> {
+            Ok(vec![1,2,3])
+        }
 
-//         /// Read a block of up to 32 bytes from a device
-//         ///
-//         /// Uses read_i2c_block_data instead read_block_data.
-//         fn smbus_read_i2c_block_data(&mut self, register: u8, len: u8) -> Result<Vec<u8>, Self::Error> {
-//             Ok(vec![1,2,3])
-//         }
+        /// Read a block of up to 32 bytes from a device
+        ///
+        /// Uses read_i2c_block_data instead read_block_data.
+        fn smbus_read_i2c_block_data(&mut self, register: u8, len: u8) -> Result<Vec<u8>, Self::Error> {
+            Ok(vec![1,2,3])
+        }
 
-//         /// Write a block of up to 32 bytes to a device
-//         ///
-//         /// The opposite of the Block Read command, this writes up to 32 bytes to
-//         /// a device, to a designated register that is specified through the
-//         /// Comm byte. The amount of data is specified in the Count byte.
-//         fn smbus_write_block_data(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
-//             Ok(())
-//         }
+        /// Write a block of up to 32 bytes to a device
+        ///
+        /// The opposite of the Block Read command, this writes up to 32 bytes to
+        /// a device, to a designated register that is specified through the
+        /// Comm byte. The amount of data is specified in the Count byte.
+        fn smbus_write_block_data(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
 
-//         /// Select a register, send 1 to 31 bytes of data to it, and reads
-//         /// 1 to 31 bytes of data from it.
-//         fn smbus_process_block(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
-//             Ok(())
-//         }
+        /// Select a register, send 1 to 31 bytes of data to it, and reads
+        /// 1 to 31 bytes of data from it.
+        fn smbus_process_block(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
+            Ok(())
+        }
     
-//         /// Read 2 bytes form a given register on a device
-//         fn smbus_read_word_data(&mut self, register: u8) -> Result<u16, LinuxI2CError> {
-//             match register {
-//                 register if register == Register::T1 as u8 => Ok(28960),
-//                 register if register == Register::T2 as u8 => Ok(26619),
-//                 register if register == Register::T3 as u8 => Ok(26619),
-//                 register if register == Register::P1 as u8 => Ok(28960),
-//                 register if register == Register::P2 as u8 => Ok(28960),
-//                 register if register == Register::P3 as u8 => Ok(28960),
-//                 register if register == Register::P4 as u8 => Ok(28960),
-//                 register if register == Register::P5 as u8 => Ok(28960),
-//                 register if register == Register::P6 as u8 => Ok(28960),
-//                 register if register == Register::P7 as u8 => Ok(28960),
-//                 register if register == Register::P8 as u8 => Ok(28960),
-//                 register if register == Register::P9 as u8 => Ok(28960),
-//                 register if register == Register::H1 as u8 => Ok(28960),
-//                 register if register == Register::H2 as u8 => Ok(28960),
-//                 register if register == Register::H3 as u8 => Ok(28960),
-//                 register if register == Register::H7 as u8 => Ok(28960),
-//                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
-//             }
-//         }
+        /// Read 2 bytes form a given register on a device
+        fn smbus_read_word_data(&mut self, register: u8) -> Result<u16, LinuxI2CError> {
+            match register {
+                register if register == Register::T1 as u8 => Ok(28960),
+                register if register == Register::T2 as u8 => Ok(26619),
+                register if register == Register::T3 as u8 => Ok(26619),
+                register if register == Register::P1 as u8 => Ok(28960),
+                register if register == Register::P2 as u8 => Ok(28960),
+                register if register == Register::P3 as u8 => Ok(28960),
+                register if register == Register::P4 as u8 => Ok(28960),
+                register if register == Register::P5 as u8 => Ok(28960),
+                register if register == Register::P6 as u8 => Ok(28960),
+                register if register == Register::P7 as u8 => Ok(28960),
+                register if register == Register::P8 as u8 => Ok(28960),
+                register if register == Register::P9 as u8 => Ok(28960),
+                register if register == Register::H1 as u8 => Ok(28960),
+                register if register == Register::H2 as u8 => Ok(28960),
+                register if register == Register::H3 as u8 => Ok(28960),
+                register if register == Register::H7 as u8 => Ok(28960),
+                _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
+            }
+        }
 
-//         fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
-//              match register {
-//                 register if register == Register::TEMP_DATA as u8 => Ok(129),
-//                 register if register == Register::TEMP_DATA_1 as u8 => Ok(142),
-//                 register if register == Register::TEMP_DATA_2 as u8 => Ok(0),
-//                 register if register == Register::PRESSURE_DATA as u8 => Ok(92),
-//                 register if register == Register::PRESSURE_DATA_1 as u8 => Ok(130),
-//                 register if register == Register::PRESSURE_DATA_2 as u8 => Ok(96),
-//                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
-//             }
-//         }
-//     }
+        fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
+             match register {
+                register if register == Register::TEMP_DATA as u8 => Ok(129),
+                register if register == Register::TEMP_DATA_1 as u8 => Ok(142),
+                register if register == Register::TEMP_DATA_2 as u8 => Ok(0),
+                register if register == Register::PRESSURE_DATA as u8 => Ok(92),
+                register if register == Register::PRESSURE_DATA_1 as u8 => Ok(130),
+                register if register == Register::PRESSURE_DATA_2 as u8 => Ok(96),
+                _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
+            }
+        }
+    }
 
-//     #[test]
-//     fn set_of_known_calibration_values_should_yield_known_temperature() {        
-//         let mut device = FakeDevice {};
-//         let mut bme = Bme280::new(&mut device).unwrap();
+    #[test]
+    #[ignore]
+    fn set_of_known_calibration_values_should_yield_known_temperature() {        
+        let mut device = FakeDevice {};
+        let mut bme = Bme280::new(&mut device).unwrap();
 
-//         let t = bme.read_temperature().unwrap();
-//         println!("Temperature is: {}", t);
-//         assert!((t - 72.91).abs() < 0.01);
-//     }
+        let t = bme.read_temperature().unwrap();
+        println!("Temperature is: {}", t);
+        assert!((t - 72.91).abs() < 0.01);
+    }
 
-//     #[test]
-//     fn set_of_known_calibration_values_should_yield_known_pressure() {
-//         let mut device = FakeDevice {};
-//         let mut bme = Bme280::new(&mut device).unwrap();
+    #[test]
+    #[ignore]
+    fn set_of_known_calibration_values_should_yield_known_pressure() {
+        let mut device = FakeDevice {};
+        let mut bme = Bme280::new(&mut device).unwrap();
 
-//         let p = bme.read_pressure().unwrap();
-//         println!("Pressure is: {} inhg.", p);
-//         assert!((p - 30.04).abs() < 0.01);
-//     }
-// }
-
-// *******************************************************************************************
+        let p = bme.read_pressure().unwrap();
+        println!("Pressure is: {} inhg.", p);
+        assert!((p - 30.04).abs() < 0.01);
+    }
+}
 
 // test temperature_reading_should_be_reasonable ... Reading calibration:
 // 28960
