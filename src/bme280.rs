@@ -38,13 +38,13 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
             t3: try!(Bme280::readWord(dev, Register::T3)),
 
             p1: try!(Bme280::readWord(dev, Register::P1)),
-            p2: try!(Bme280::readWord(dev, Register::P2)),
+            p2: try!(Bme280::readWord(dev, Register::P2)) as i16,
             p3: try!(Bme280::readWord(dev, Register::P3)),
             p4: try!(Bme280::readWord(dev, Register::P4)),
             p5: try!(Bme280::readWord(dev, Register::P5)),
-            p6: try!(Bme280::readWord(dev, Register::P6)),
+            p6: try!(Bme280::readWord(dev, Register::P6)) as i16,
             p7: try!(Bme280::readWord(dev, Register::P7)),
-            p8: try!(Bme280::readWord(dev, Register::P8)),
+            p8: try!(Bme280::readWord(dev, Register::P8)) as i16,
             p9: try!(Bme280::readWord(dev, Register::P9)),
 
             h1: try!(Bme280::readWord(dev, Register::T1)),
@@ -54,11 +54,10 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         })
     }
 
-    fn readWord(dev: &mut T, register: Register) -> Result<i16, LinuxI2CError> {
+    fn readWord(dev: &mut T, register: Register) -> Result<u16, LinuxI2CError> {
         let dig = try!(dev.smbus_read_word_data(register as u8));
-        let foo: u8 = dig;
         // println!("{}", dig);
-        Ok(dig as i16)
+        Ok(dig)
     }
 
     fn read_raw_temp(&mut self) -> Result<f64, LinuxI2CError> { 
