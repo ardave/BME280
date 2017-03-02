@@ -56,6 +56,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
     fn readWord(dev: &mut T, register: Register) -> Result<i16, LinuxI2CError> {
         let dig = try!(dev.smbus_read_word_data(register as u8));
+        let foo: u8 = dig;
         // println!("{}", dig);
         Ok(dig as i16)
     }
