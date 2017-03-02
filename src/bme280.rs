@@ -28,7 +28,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     pub fn print_calibration(&mut self) {
-        println!("{:?}", self.calibration);
+        // println!("{:?}", self.calibration);
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
@@ -97,6 +97,12 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let var1 = (ut / 16384.0 - t1 / 1024.0) * t2;
         let var2 = ((ut / 131072.0 - t1 / 8192.0) * (ut / 131072.0 - t1 / 8192.0)) * t3;
         let t_fine = var1 + var2;
+        println!("ut: {}", ut);
+        println!("t1: {}", t1);
+        println!("t2: {}", t2);
+        println!("t3: {}", t3);
+        println!("var1: {}", var1);
+        println!("var2: {}", var2);
         Ok(t_fine)
     }
 
