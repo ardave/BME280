@@ -5,7 +5,6 @@ use i2cdev::linux::{LinuxI2CError};
 use super::calibration::Calibration;
 use super::register::Register;
 
-
 const BME280OSAMPLE1 : u8 = 1;
 const BME280OSAMPLE2 : u8 = 2;
 const BME280OSAMPLE4 : u8 = 3;
@@ -76,10 +75,11 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let msb = try!(self.readByteData(Register::TEMP_DATA));
         let lsb = try!(self.readByteData(Register::TEMP_DATA_1));
         let xlsb = try!(self.readByteData(Register::TEMP_DATA_2));
-        println!("msb: {}", msb);
-        println!("lsb: {}", lsb);
-        println!("xlsb: {}", xlsb);
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        println!("temperature msb: {}", msb);
+        println!("temperature lsb: {}", lsb);
+        println!("temperature xlsb: {}", xlsb);
+        println!("temperature Raw is: {}", raw);
         Ok(raw as f64)
     }
 
@@ -113,11 +113,11 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let msb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
         let lsb = try!(self.readByteData(Register::PRESSURE_DATA_1)) as u32;
         let xlsb = try!(self.readByteData(Register::PRESSURE_DATA_2)) as u32;
-        println!("msb: {}", msb);
-        println!("lsb: {}", lsb);
-        println!("xlsb: {}", xlsb);
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
-        println!("Raw is: {}", raw);
+        println!("pressure msb: {}", msb);
+        println!("pressure lsb: {}", lsb);
+        println!("pressure xlsb: {}", xlsb);
+        println!("pressure Raw is: {}", raw);
         Ok(raw)
     }
 

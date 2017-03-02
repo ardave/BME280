@@ -148,6 +148,10 @@ class BME280(object):
         lsb = self._device.readU8(BME280_REGISTER_TEMP_DATA + 1)
         xlsb = self._device.readU8(BME280_REGISTER_TEMP_DATA + 2)
         raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4
+        print "temperature msb: {0}".format(msb)
+        print "temperature lsb: {0}".format(lsb)
+        print "temperature xlsb: {0}".format(xlsb)
+        print 'temperature Raw is: {0}'.format(raw)
         return raw
 
     def read_raw_pressure(self):
@@ -157,11 +161,11 @@ class BME280(object):
         msb = self._device.readU8(BME280_REGISTER_PRESSURE_DATA)
         lsb = self._device.readU8(BME280_REGISTER_PRESSURE_DATA + 1)
         xlsb = self._device.readU8(BME280_REGISTER_PRESSURE_DATA + 2)
-        print "msb: {0}".format(msb)
-        print "lsb: {0}".format(lsb)
-        print "xlsb: {0}".format(xlsb)
         raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4
-        print 'Raw is: {0}'.format(raw)
+        print "pressure msb: {0}".format(msb)
+        print "pressure lsb: {0}".format(lsb)
+        print "pressure xlsb: {0}".format(xlsb)
+        print 'presure Raw is: {0}'.format(raw)
         return raw
 
     def read_raw_humidity(self):
