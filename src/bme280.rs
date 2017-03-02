@@ -36,7 +36,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(Calibration {
             t1: try!(Bme280::readWord(dev, Register::T1)),
             t2: try!(Bme280::readWord(dev, Register::T2)),
-            t3: try!(Bme280::readWord(dev, Register::T2)),
+            t3: try!(Bme280::readWord(dev, Register::T3)),
 
             p1: try!(Bme280::readWord(dev, Register::P1)),
             p2: try!(Bme280::readWord(dev, Register::P2)),
