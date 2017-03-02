@@ -28,7 +28,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     pub fn print_calibration(&mut self) {
-        // println!("{:?}", self.calibration);
+        println!("{:?}", self.calibration);
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {

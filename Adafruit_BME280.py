@@ -187,7 +187,10 @@ class BME280(object):
         temp = (var1 + var2) / 5120.0
         print "UT: {0}".format(UT)
         print "var1: {0}".format(var1)
-        print "var2: {0}".format(var2)        
+        print "var2: {0}".format(var2)      
+        print "t1: {0}".format(self.dig_T1)
+        print "t2: {0}".format(float(self.dig_T2))
+        print "t3: {0}".format(float(self.dig_T3))
         return temp
 
     def read_pressure(self):
