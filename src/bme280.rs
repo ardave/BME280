@@ -74,6 +74,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let lsb = try!(self.readByteData(Register::TEMP_DATA_1));
         let xlsb = try!(self.readByteData(Register::TEMP_DATA_2));
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        println!("raw temp: {}", raw as f64);
         Ok(raw as f64)
     }
 
@@ -91,6 +92,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let var1 = (ut / 16384.0 - t1 / 1024.0) * t2;
         let var2 = ((ut / 131072.0 - t1 / 8192.0) * (ut / 131072.0 - t1 / 8192.0)) * t3;
         let t_fine = var1 + var2;
+        println!("t_fine: {}", t_fine);
         Ok(t_fine)
     }
 
@@ -108,6 +110,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let lsb = try!(self.readByteData(Register::PRESSURE_DATA_1)) as u32;
         let xlsb = try!(self.readByteData(Register::PRESSURE_DATA_2)) as u32;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        println!("raw pressure: {}", raw);
         Ok(raw)
     }
 

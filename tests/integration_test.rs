@@ -50,6 +50,7 @@ fn pressure_reading_should_be_reasonable() {
     let mut bme = Bme280::new(&mut device).unwrap();
 
     let p = bme.read_pressure().unwrap();
+    bme.print_calibration();
     println!("The pressure is: {:.2} in hg.", p);
     assert!(p > 25.0); 
     assert!(p < 35.0);
