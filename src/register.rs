@@ -1,3 +1,8 @@
+use std::fmt::Display;
+use std::fmt::Result;
+use std::fmt::Formatter;
+
+#[derive(Debug)]
 pub enum Register {
     T1 = 0x88,
     T2 = 0x8A,
@@ -35,4 +40,12 @@ pub enum Register {
     TEMP_DATA_1 = 0xFA + 1,
     TEMP_DATA_2 = 0xFA + 2,
     HUMIDITY_DAT  = 0xFD
+}
+
+impl Display for Register {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(f, "{:?}", self)
+        // or, alternatively:
+        // fmt::Debug::fmt(self, f)
+    }
 }
