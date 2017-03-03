@@ -219,15 +219,17 @@ mod tests {
                 register if register == Register::T1 as u8 => Ok(28960),
                 register if register == Register::T2 as u8 => Ok(26619),
                 register if register == Register::T3 as u8 => Ok(26619),
-                register if register == Register::P1 as u8 => Ok(28960),
-                register if register == Register::P2 as u8 => Ok(28960),
-                register if register == Register::P3 as u8 => Ok(28960),
-                register if register == Register::P4 as u8 => Ok(28960),
-                register if register == Register::P5 as u8 => Ok(28960),
-                register if register == Register::P6 as u8 => Ok(28960),
-                register if register == Register::P7 as u8 => Ok(28960),
-                register if register == Register::P8 as u8 => Ok(28960),
-                register if register == Register::P9 as u8 => Ok(28960),
+
+                register if register == Register::P1 as u8 => Ok(34988),
+                register if register == Register::P2 as u8 => Ok(54823),
+                register if register == Register::P3 as u8 => Ok(3024),
+                register if register == Register::P4 as u8 => Ok(5831),
+                register if register == Register::P5 as u8 => Ok(96),
+                register if register == Register::P6 as u8 => Ok(65529),
+                register if register == Register::P7 as u8 => Ok(9900),
+                register if register == Register::P8 as u8 => Ok(55306),
+                register if register == Register::P9 as u8 => Ok(4285),
+
                 register if register == Register::H1 as u8 => Ok(28960),
                 register if register == Register::H2 as u8 => Ok(28960),
                 register if register == Register::H3 as u8 => Ok(28960),
@@ -266,7 +268,7 @@ mod tests {
 
         let p = bme.read_pressure().unwrap();
         println!("Pressure is: {} inhg.", p);
-        assert!((p - 30.04).abs() < 0.01);
+        assert!((p - 30.20).abs() < 0.01);
     }
 }
 
