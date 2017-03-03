@@ -242,8 +242,8 @@ mod tests {
                 register if register == Register::TEMP_DATA_1 as u8 => Ok(142),
                 register if register == Register::TEMP_DATA_2 as u8 => Ok(0),
                 register if register == Register::PRESSURE_DATA as u8 => Ok(92),
-                register if register == Register::PRESSURE_DATA_1 as u8 => Ok(130),
-                register if register == Register::PRESSURE_DATA_2 as u8 => Ok(96),
+                register if register == Register::PRESSURE_DATA_1 as u8 => Ok(215),
+                register if register == Register::PRESSURE_DATA_2 as u8 => Ok(112),
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath))
             }
         }
