@@ -173,6 +173,7 @@ class BME280(object):
         msb = self._device.readU8(BME280_REGISTER_HUMIDITY_DATA)
         lsb = self._device.readU8(BME280_REGISTER_HUMIDITY_DATA + 1)
         raw = (msb << 8) | lsb
+        print "Raw humidity: {0}".format(raw)
         return raw
 
     def read_temperature(self):

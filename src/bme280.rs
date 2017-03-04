@@ -184,6 +184,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let msb = try!(self.readByteData(Register::HUMIDITY_DATA));
         let lsb = try!(self.readByteData(Register::HUMIDITY_DATA_1));
         let raw = (msb << 8) | lsb;
+        println!("Raw humidity: {}", raw);
         Ok(raw)
 
         // """Assumes that the temperature has already been read """
