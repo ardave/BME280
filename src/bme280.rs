@@ -49,7 +49,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
             p8: try!(Bme280::readWord(dev, Register::P8)) as i16,
             p9: try!(Bme280::readWord(dev, Register::P9)),
 
-            h1: try!(Bme280::readWord(dev, Register::H1)),
+            h1: try!(Bme280::readWord(dev, Register::H1)) as u8,
             h2: try!(Bme280::readWord(dev, Register::H2)),
             h3: try!(Bme280::readWord(dev, Register::H3)),
             h4: try!(Bme280::readWord(dev, Register::H4)),
