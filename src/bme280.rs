@@ -161,7 +161,9 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let h6 = self.calibration.h6 as f64;
         let adc = try!(self.read_raw_humidity()) as f64;        
         let h = try!(self.calc_t_fine()) - 76800.0;
+        println!("h: {}", h);
         let h_2 = (adc - (h4 * 64.0 + h5 / 16384.8 * h)) * (h2 / 65536.0 * (1.0 + h6 / 67108864.0 * h * (1.0 + h3 / 67108864.0 * h)));
+        println!("h_2: {}", h_2);
         let h_3 = h_2 * (1.0 - h1 * h_2 / 524288.0);
         let h_4 = if h > 100.0 { 100.0 } else { 0.0 };
 
