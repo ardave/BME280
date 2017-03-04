@@ -39,7 +39,8 @@ pub enum Register {
     TEMP_DATA = 0xFA,
     TEMP_DATA_1 = 0xFA + 1,
     TEMP_DATA_2 = 0xFA + 2,
-    HUMIDITY_DAT  = 0xFD
+    HUMIDITY_DATA  = 0xFD,
+    HUMIDITY_DATA_1 = 0xFD + 1
 }
 
 impl Display for Register {

@@ -51,8 +51,23 @@ fn pressure_reading_should_be_reasonable() {
     let mut bme = Bme280::new(&mut device).unwrap();
 
     let p = bme.read_pressure().unwrap();
-    bme.print_calibration();
     println!("The pressure is: {:.2} in hg.", p);
     assert!(p > 25.0); 
     assert!(p < 35.0);
+}
+
+#[test]
+#[ignore]
+fn humidity_reading_should_be_reasonable() {
+    let i2c_addr = 0x77;
+    let busnum = 2;
+    let devname = format!("/dev/i2c-{}", busnum);
+    let mut device = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let mut bme = Bme280::new(&mut device).unwrap();
+
+    let h = bme.read_humidity().unwrap();
+    bme.print_calibration();
+    println!("The humidity is: {:.2}%.", h);
+    assert!(h <= 100.0); 
+    assert!(h >= 0.0);
 }

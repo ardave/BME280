@@ -49,10 +49,13 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
             p8: try!(Bme280::readWord(dev, Register::P8)) as i16,
             p9: try!(Bme280::readWord(dev, Register::P9)),
 
-            h1: try!(Bme280::readWord(dev, Register::T1)),
-            h2: try!(Bme280::readWord(dev, Register::T1)),
-            h3: try!(Bme280::readWord(dev, Register::T1)),
-            h7: try!(Bme280::readWord(dev, Register::T1))
+            h1: try!(Bme280::readWord(dev, Register::H1)),
+            h2: try!(Bme280::readWord(dev, Register::H2)),
+            h3: try!(Bme280::readWord(dev, Register::H3)),
+            h4: try!(Bme280::readWord(dev, Register::H4)),
+            h5: try!(Bme280::readWord(dev, Register::H5)),
+            h6: try!(Bme280::readWord(dev, Register::H6)),
+            h7: try!(Bme280::readWord(dev, Register::H7))
         })
     }
 
@@ -147,7 +150,49 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let pascals = p_2 + (var1_4 + var2_4 + p7) / 16.0;        
         let in_hg = pascals *  0.000295299830714;
         Ok(in_hg)
-    }    
+    }   
+
+    pub fn read_humidity(&mut self) -> Result<f64, LinuxI2CError> {
+        let h1 = self.calibration.h1 as f64;
+        let h2 = self.calibration.h2 as f64;
+        let h3 = self.calibration.h3 as f64;
+        let h4 = self.calibration.h4 as f64;
+        let h5 = self.calibration.h5 as f64;
+        let h6 = self.calibration.h6 as f64;
+        let adc = try!(self.read_raw_humidity()) as f64;        
+        let h = try!(self.calc_t_fine()) - 76800.0;
+        let h_2 = (adc - (h4 * 64.0 + h5 / 16384.8 * h)) * (h2 / 65536.0 * (1.0 + h6 / 67108864.0 * h * (1.0 + h3 / 67108864.0 * h)));
+        let h_3 = h_2 * (1.0 - h1 * h_2 / 524288.0);
+        let h_4 = if h > 100.0 { 100.0 } else { 0.0 };
+
+        // adc = self.read_raw_humidity()
+        // # print 'Raw humidity = {0:d}'.format (adc)
+        // h = self.t_fine - 76800.0
+        // h = (adc - (self.dig_H4 * 64.0 + self.dig_H5 / 16384.8 * h)) * (
+        // self.dig_H2 / 65536.0 * (1.0 + self.dig_H6 / 67108864.0 * h * (
+        // 1.0 + self.dig_H3 / 67108864.0 * h)))
+        // h = h * (1.0 - self.dig_H1 * h / 524288.0)
+        // if h > 100:
+        //     h = 100
+        // elif h < 0:
+        //     h = 0
+        // return h
+        Ok(h_4)
+    }
+
+    fn read_raw_humidity(&mut self) -> Result<u64, LinuxI2CError> {
+        let msb = try!(self.readByteData(Register::HUMIDITY_DATA));
+        let lsb = try!(self.readByteData(Register::HUMIDITY_DATA_1));
+        let raw = (msb << 8) | lsb;
+        Ok(raw)
+
+        // """Assumes that the temperature has already been read """
+        // """i.e. that enough delay has been provided"""
+        // msb = self._device.readU8(BME280_REGISTER_HUMIDITY_DATA)
+        // lsb = self._device.readU8(BME280_REGISTER_HUMIDITY_DATA + 1)
+        // raw = (msb << 8) | lsb
+        // return raw
+    }
 }
 
 #[cfg(test)]
