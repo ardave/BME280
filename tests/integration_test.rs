@@ -12,6 +12,7 @@ fn it_can_initialize() {
     let i2c_addr = 0x77;
     let busnum = 2;
     let devname = format!("/dev/i2c-{}", busnum);
+
     let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
     let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
     let result = Bme280::new(&mut debugDevice);
@@ -39,9 +40,6 @@ fn temperature_reading_should_be_reasonable() {
     let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
     let mut bme = Bme280::new(&mut debugDevice).unwrap();
 
-    // let mut device = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    // let mut bme = Bme280::new(&mut device).unwrap();
-
     let t = bme.read_temperature().unwrap();
     println!("The temperature is: {:.2}", t);
     assert!(t > -50.0); // I'm starting out thinking fahrenheit, but we'll get there.
@@ -54,8 +52,10 @@ fn pressure_reading_should_be_reasonable() {
     let i2c_addr = 0x77;
     let busnum = 2;
     let devname = format!("/dev/i2c-{}", busnum);
-    let mut device = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let mut bme = Bme280::new(&mut device).unwrap();
+
+    let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
+    let mut bme = Bme280::new(&mut debugDevice).unwrap();
 
     let p = bme.read_pressure().unwrap();
     println!("The pressure is: {:.2} in hg.", p);
@@ -108,12 +108,16 @@ impl<'a, T> I2CDevice for DebugDeviceDecorator<'a, T>
 
     fn smbus_read_word_data(&mut self, register: u8) -> Result<u16, LinuxI2CError> {
         println!("smbus_read_word_data: register: {}", register);
-        self.device.smbus_read_word_data(register)
+        let result = try!(self.device.smbus_read_word_data(register));
+        println!("result: {}", result);
+        Ok(result)
     }
 
     fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
             println!("smbus_read_byte_data: register: {}", register);
-            self.device.smbus_read_byte_data(register)
+            let result = try!(self.device.smbus_read_byte_data(register));
+            println!("result: {}", result);
+            Ok(result)
     }
 }
 
