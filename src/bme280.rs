@@ -27,39 +27,27 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(Bme280 { calibration: cal, device: dev, mode: BME280OSAMPLE1 })
     }
 
-    pub fn print_calibration(&mut self) {
-        println!("*********  Begin Calibration Printout **********");
-        println!("{:?}", self.calibration);
-        println!("*********  End Calibration Printout **********");
-    }
-
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
         Ok(Calibration {
-            t1: try!(Bme280::readWord(dev, Register::T1)),
-            t2: try!(Bme280::readWord(dev, Register::T2)),
-            t3: try!(Bme280::readWord(dev, Register::T3)),
+            t1: try!(dev.smbus_read_word_data(Register::T1 as u8)),
+            t2: try!(dev.smbus_read_word_data(Register::T2 as u8)) as i16,
+            t3: try!(dev.smbus_read_word_data(Register::T3 as u8)) as i16,
 
-            p1: try!(Bme280::readWord(dev, Register::P1)),
-            p2: try!(Bme280::readWord(dev, Register::P2)) as i16,
-            p3: try!(Bme280::readWord(dev, Register::P3)),
-            p4: try!(Bme280::readWord(dev, Register::P4)),
-            p5: try!(Bme280::readWord(dev, Register::P5)),
-            p6: try!(Bme280::readWord(dev, Register::P6)) as i16,
-            p7: try!(Bme280::readWord(dev, Register::P7)),
-            p8: try!(Bme280::readWord(dev, Register::P8)) as i16,
-            p9: try!(Bme280::readWord(dev, Register::P9)),
+            p1: try!(dev.smbus_read_word_data(Register::P1 as u8)),
+            p2: try!(dev.smbus_read_word_data(Register::P2 as u8)) as i16,
+            p3: try!(dev.smbus_read_word_data(Register::P3 as u8)) as i16,
+            p4: try!(dev.smbus_read_word_data(Register::P4 as u8)) as i16,
+            p5: try!(dev.smbus_read_word_data(Register::P5 as u8)) as i16,
+            p6: try!(dev.smbus_read_word_data(Register::P6 as u8)) as i16,
+            p7: try!(dev.smbus_read_word_data(Register::P7 as u8)) as i16,
+            p8: try!(dev.smbus_read_word_data(Register::P8 as u8)) as i16,
+            p9: try!(dev.smbus_read_word_data(Register::P9 as u8)) as i16,
 
-            h1: try!(Bme280::readWord(dev, Register::T1)),
-            h2: try!(Bme280::readWord(dev, Register::T1)),
-            h3: try!(Bme280::readWord(dev, Register::T1)),
-            h7: try!(Bme280::readWord(dev, Register::T1))
+            h1: try!(dev.smbus_read_word_data(Register::T1 as u8)),
+            h2: try!(dev.smbus_read_word_data(Register::T1 as u8)) as i16,
+            h3: try!(dev.smbus_read_word_data(Register::T1 as u8)),
+            h7: try!(dev.smbus_read_word_data(Register::T1 as u8))
         })
-    }
-
-    fn readWord(dev: &mut T, register: Register) -> Result<u16, LinuxI2CError> {
-        let dig = try!(dev.smbus_read_word_data(register as u8));
-        println!("{}", dig);
-        Ok(dig)
     }
 
     fn read_raw_temp(&mut self) -> Result<f64, LinuxI2CError> { 
@@ -72,18 +60,13 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         let dur = time::Duration::from_millis((sleep_time * 1000.0) as u64);
         thread::sleep(dur);
         
-        let msb = try!(self.readByteData(Register::TEMP_DATA));
-        let lsb = try!(self.readByteData(Register::TEMP_DATA_1));
-        let xlsb = try!(self.readByteData(Register::TEMP_DATA_2));
+        let msb = try!(self.device.smbus_read_byte_data(Register::TEMP_DATA as u8)) as u32;
+        let lsb = try!(self.device.smbus_read_byte_data(Register::TEMP_DATA_1 as u8)) as u32;
+        let xlsb = try!(self.device.smbus_read_byte_data(Register::TEMP_DATA_2 as u8)) as u32;
+
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         println!("raw temp: {}", raw as f64);
         Ok(raw as f64)
-    }
-
-    fn readByteData(&mut self, register: Register) -> Result<u64, LinuxI2CError> {
-        let val = try!(self.device.smbus_read_byte_data(register as u8));
-        println!("{}", val);
-        Ok(val as u64)
     }
 
     fn calc_t_fine(&mut self) -> Result<f64, LinuxI2CError> {
@@ -108,10 +91,10 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     fn read_raw_pressure(&mut self) -> Result<u32, LinuxI2CError> {
-        let msb = try!(self.readByteData(Register::PRESSURE_DATA)) as u32;
-        let lsb = try!(self.readByteData(Register::PRESSURE_DATA_1)) as u32;
-        let xlsb = try!(self.readByteData(Register::PRESSURE_DATA_2)) as u32;
-        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        let msb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
+        let lsb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA_1 as u8)) as u32;
+        let xlsb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA_2 as u8)) as u32;
+        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;        
         println!("raw pressure: {}", raw);
         Ok(raw)
     }
@@ -167,53 +150,34 @@ mod tests {
     impl I2CDevice for FakeDevice {
         type Error = LinuxI2CError;
 
-        /// Read data from the device to fill the provided slice
         fn read(&mut self, data: &mut [u8]) -> Result<(), Self::Error> {
             Ok(())
         }
 
-        /// Write the provided buffer to the device
         fn write(&mut self, data: &[u8]) -> Result<(), Self::Error> {
             Ok(())
         }
 
-        /// This sends a single bit to the device, at the place of the Rd/Wr bit
         fn smbus_write_quick(&mut self, bit: bool) -> Result<(), Self::Error> {
             Ok(())
         }
 
-        /// Read a block of up to 32 bytes from a device
-        ///
-        /// The actual number of bytes available to read is returned in the count
-        /// byte.  This code returns a correctly sized vector containing the
-        /// count bytes read from the device.
         fn smbus_read_block_data(&mut self, register: u8) -> Result<Vec<u8>, Self::Error> {
             Ok(vec![1,2,3])
         }
 
-        /// Read a block of up to 32 bytes from a device
-        ///
-        /// Uses read_i2c_block_data instead read_block_data.
         fn smbus_read_i2c_block_data(&mut self, register: u8, len: u8) -> Result<Vec<u8>, Self::Error> {
             Ok(vec![1,2,3])
         }
 
-        /// Write a block of up to 32 bytes to a device
-        ///
-        /// The opposite of the Block Read command, this writes up to 32 bytes to
-        /// a device, to a designated register that is specified through the
-        /// Comm byte. The amount of data is specified in the Count byte.
         fn smbus_write_block_data(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
             Ok(())
         }
 
-        /// Select a register, send 1 to 31 bytes of data to it, and reads
-        /// 1 to 31 bytes of data from it.
         fn smbus_process_block(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
             Ok(())
         }
     
-        /// Read 2 bytes form a given register on a device
         fn smbus_read_word_data(&mut self, register: u8) -> Result<u16, LinuxI2CError> {
             match register {
                 register if register == Register::T1 as u8 => Ok(28960),
