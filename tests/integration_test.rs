@@ -107,16 +107,16 @@ impl<'a, T> I2CDevice for DebugDeviceDecorator<'a, T>
     }
 
     fn smbus_read_word_data(&mut self, register: u8) -> Result<u16, LinuxI2CError> {
-        println!("smbus_read_word_data: register: {}", register);
+        print!("smbus_read_word_data: register: {}", register);
         let result = try!(self.device.smbus_read_word_data(register));
-        println!("result: {}", result);
+        println!(" result: {}", result);
         Ok(result)
     }
 
     fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
-            println!("smbus_read_byte_data: register: {}", register);
+            print!("smbus_read_byte_data: register: {}", register);
             let result = try!(self.device.smbus_read_byte_data(register));
-            println!("result: {}", result);
+            println!(" result: {}", result);
             Ok(result)
     }
 }
