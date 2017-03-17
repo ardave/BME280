@@ -6,6 +6,17 @@ use i2cdev::core::I2CDevice;
 use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
 use bme280::bme280::{Bme280};
 
+fn create_device<'a>() -> Bme280<'a, DebugDeviceDecorator<'a, LinuxI2CDevice>> {
+    let i2c_addr = 0x77;
+    let busnum = 2;
+    let devname = format!("/dev/i2c-{}", busnum);
+
+    let linuxi2cdevice = &mut LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let debugDevice = &mut DebugDeviceDecorator {device: linuxi2cdevice};
+    let result = Bme280::new(debugDevice).unwrap();
+    result
+}
+
 #[test]
 #[ignore]
 fn it_can_initialize() {
@@ -13,9 +24,9 @@ fn it_can_initialize() {
     let busnum = 2;
     let devname = format!("/dev/i2c-{}", busnum);
 
-    let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
-    let result = Bme280::new(&mut debugDevice);
+    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let debugDevice = DebugDeviceDecorator {device: &linuxi2cdevice};
+    let result = Bme280::new(&debugDevice);
     
     match result {
         Ok(_device) => assert!(true),
