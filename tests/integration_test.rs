@@ -49,7 +49,7 @@ fn temperature_reading_should_be_reasonable() {
 
     let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
     let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
-    let mut bme = Bme280::new(&mut debugDevice).unwrap();
+    let bme = Bme280::new(&mut debugDevice).unwrap();
 
     let t = bme.read_temperature().unwrap();
     println!("The temperature is: {:.2}", t);
@@ -66,7 +66,7 @@ fn pressure_reading_should_be_reasonable() {
 
     let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
     let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
-    let mut bme = Bme280::new(&mut debugDevice).unwrap();
+    let bme = Bme280::new(&mut debugDevice).unwrap();
 
     let p = bme.read_pressure().unwrap();
     println!("The pressure is: {:.2} in hg.", p);

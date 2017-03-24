@@ -53,7 +53,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
 
-    fn read_raw_temp(&mut self) -> Result<f64, LinuxI2CError> { 
+    fn read_raw_temp(&self) -> Result<f64, LinuxI2CError> { 
         let mut refmut = self.device.borrow_mut();
         let dev = refmut.deref_mut();
         
@@ -75,7 +75,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(raw as f64)
     }
 
-    fn calc_t_fine(&mut self) -> Result<f64, LinuxI2CError> {
+    fn calc_t_fine(&self) -> Result<f64, LinuxI2CError> {
         let ut = try!(self.read_raw_temp());
         let t1 = self.calibration.t1 as f64;
         let t2 = self.calibration.t2 as f64;
@@ -87,7 +87,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(t_fine)
     }
 
-    pub fn read_temperature(&mut self) -> Result<f64, LinuxI2CError> {
+    pub fn read_temperature(&self) -> Result<f64, LinuxI2CError> {
         // Technically I'm skipping the step of casting to an integer, which would
         // result in rounding down of the var1 and var2 that were used in the original
         // calculation of t_fine:
@@ -96,7 +96,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(fahrenheit)
     }
 
-    fn read_raw_pressure(&mut self) -> Result<u32, LinuxI2CError> {
+    fn read_raw_pressure(&self) -> Result<u32, LinuxI2CError> {
         let mut refmut = self.device.borrow_mut();
         let dev = refmut.deref_mut();
         
@@ -108,7 +108,7 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         Ok(raw)
     }
 
-    pub fn read_pressure(&mut self) -> Result<f64, LinuxI2CError> {
+    pub fn read_pressure(&self) -> Result<f64, LinuxI2CError> {
         let p1 = self.calibration.p1 as f64;
         let p2 = self.calibration.p2 as f64;
         let p3 = self.calibration.p3 as f64;
