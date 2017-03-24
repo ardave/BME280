@@ -1,6 +1,9 @@
 use std::{thread, time};
 use i2cdev::core::I2CDevice;
-use i2cdev::linux::{LinuxI2CError};
+use i2cdev::linux::LinuxI2CError;
+use std::cell::RefCell;
+use std::ops::DerefMut;
+
 
 use super::calibration::Calibration;
 use super::register::Register;
@@ -15,16 +18,15 @@ const MAX_OVER_SAMPLING_AND_NORMAL_MODE : u8 = 0x3F;
 
 pub struct Bme280<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> {
     calibration: Calibration,
-    device: &'a mut T,
+    device: RefCell<&'a mut T>,
     mode: u8
 }
 
 impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
-
     pub fn new(dev: &'a mut T) -> Result<Bme280<'a, T>, LinuxI2CError> {
         let cal = try!(Bme280::get_calibration(dev));
         try!(dev.smbus_write_byte_data(Register::CONTROL as u8, MAX_OVER_SAMPLING_AND_NORMAL_MODE));
-        Ok(Bme280 { calibration: cal, device: dev, mode: BME280OSAMPLE1 })
+        Ok(Bme280 { calibration: cal, device: RefCell::new(dev), mode: BME280OSAMPLE1 })
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
@@ -50,19 +52,23 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
         })
     }
 
+
     fn read_raw_temp(&mut self) -> Result<f64, LinuxI2CError> { 
-        try!(self.device.smbus_write_byte_data(Register::CONTROL_HUM as u8, self.mode));
+        let mut refmut = self.device.borrow_mut();
+        let dev = refmut.deref_mut();
+        
+        try!(dev.smbus_write_byte_data(Register::CONTROL_HUM as u8, self.mode));
         let meas = self.mode << 5 | self.mode << 2 | 1;
-        try!(self.device.smbus_write_byte_data(Register::CONTROL as u8, meas));
+        try!(dev.smbus_write_byte_data(Register::CONTROL as u8, meas));
         let mut sleep_time = 0.00125 + 0.0023 * (1 << self.mode) as f32;
         sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
         sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
         let dur = time::Duration::from_millis((sleep_time * 1000.0) as u64);
         thread::sleep(dur);
         
-        let msb = try!(self.device.smbus_read_byte_data(Register::TEMP_DATA as u8)) as u32;
-        let lsb = try!(self.device.smbus_read_byte_data(Register::TEMP_DATA_1 as u8)) as u32;
-        let xlsb = try!(self.device.smbus_read_byte_data(Register::TEMP_DATA_2 as u8)) as u32;
+        let msb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA as u8)) as u32;
+        let lsb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA_1 as u8)) as u32;
+        let xlsb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA_2 as u8)) as u32;
 
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         println!("raw temp: {}", raw as f64);
@@ -91,9 +97,12 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
     }
 
     fn read_raw_pressure(&mut self) -> Result<u32, LinuxI2CError> {
-        let msb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
-        let lsb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA_1 as u8)) as u32;
-        let xlsb = try!(self.device.smbus_read_byte_data(Register::PRESSURE_DATA_2 as u8)) as u32;
+        let mut refmut = self.device.borrow_mut();
+        let dev = refmut.deref_mut();
+        
+        let msb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
+        let lsb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA_1 as u8)) as u32;
+        let xlsb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA_2 as u8)) as u32;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;        
         println!("raw pressure: {}", raw);
         Ok(raw)
