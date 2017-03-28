@@ -11,9 +11,9 @@ use bme280::bme280::{Bme280};
 //     let busnum = 2;
 //     let devname = format!("/dev/i2c-{}", busnum);
 
-//     let linuxi2cdevice = &mut LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-//     let debugDevice = &mut DebugDeviceDecorator {device: linuxi2cdevice};
-//     let result = Bme280::new(debugDevice).unwrap();
+//     let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+//     let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
+//     let result = Bme280::new(&mut debugDevice).unwrap();
 //     result
 // }
 
@@ -125,10 +125,10 @@ impl<'a, T> I2CDevice for DebugDeviceDecorator<'a, T>
     }
 
     fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
-            print!("smbus_read_byte_data: register: {}", register);
-            let result = try!(self.device.smbus_read_byte_data(register));
-            println!(" result: {}", result);
-            Ok(result)
+        print!("smbus_read_byte_data: register: {}", register);
+        let result = try!(self.device.smbus_read_byte_data(register));
+        println!(" result: {}", result);
+        Ok(result)
     }
 }
 

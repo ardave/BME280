@@ -16,17 +16,18 @@ const BME280OSAMPLE16 : u8 = 5;
 
 const MAX_OVER_SAMPLING_AND_NORMAL_MODE : u8 = 0x3F;
 
-pub struct Bme280<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> {
+pub struct Bme280<T: I2CDevice<Error=LinuxI2CError> + Sized> {
     calibration: Calibration,
-    device: RefCell<&'a mut T>,
+    device: RefCell<T>,
     mode: u8
 }
 
-impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
-    pub fn new(dev: &'a mut T) -> Result<Bme280<'a, T>, LinuxI2CError> {
-        let cal = try!(Bme280::get_calibration(dev));
-        try!(dev.smbus_write_byte_data(Register::CONTROL as u8, MAX_OVER_SAMPLING_AND_NORMAL_MODE));
-        Ok(Bme280 { calibration: cal, device: RefCell::new(dev), mode: BME280OSAMPLE1 })
+impl<T: I2CDevice<Error=LinuxI2CError> + Sized> Bme280<T> {
+    pub fn new(dev: T) -> Result<Bme280<T>, LinuxI2CError> {
+        let mut foo = dev;
+        let cal = try!(Bme280::get_calibration(&mut foo));
+        try!(foo.smbus_write_byte_data(Register::CONTROL as u8, MAX_OVER_SAMPLING_AND_NORMAL_MODE));
+        Ok(Bme280 { calibration: cal, device: RefCell::new(foo), mode: BME280OSAMPLE1 })
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
@@ -54,8 +55,9 @@ impl<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> Bme280<'a, T> {
 
 
     fn read_raw_temp(&self) -> Result<f64, LinuxI2CError> { 
-        let mut refmut = self.device.borrow_mut();
-        let dev = refmut.deref_mut();
+        let mut a = self.device.borrow_mut();
+        let dev = a.deref_mut();
+        
         
         try!(dev.smbus_write_byte_data(Register::CONTROL_HUM as u8, self.mode));
         let meas = self.mode << 5 | self.mode << 2 | 1;
