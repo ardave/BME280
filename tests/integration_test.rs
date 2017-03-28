@@ -24,9 +24,9 @@ fn it_can_initialize() {
     let busnum = 2;
     let devname = format!("/dev/i2c-{}", busnum);
 
-    let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
-    let result = Bme280::new(&mut debugDevice);
+    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let debug_device = DebugDeviceDecorator {device: linuxi2cdevice};
+    let result = Bme280::new(debug_device);
     
     match result {
         Ok(_device) => assert!(true),
@@ -47,9 +47,9 @@ fn temperature_reading_should_be_reasonable() {
     let busnum = 2;
     let devname = format!("/dev/i2c-{}", busnum);
 
-    let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
-    let bme = Bme280::new(&mut debugDevice).unwrap();
+    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let debug_device = DebugDeviceDecorator {device: linuxi2cdevice};
+    let bme = Bme280::new(debug_device).unwrap();
 
     let t = bme.read_temperature().unwrap();
     println!("The temperature is: {:.2}", t);
@@ -64,9 +64,9 @@ fn pressure_reading_should_be_reasonable() {
     let busnum = 2;
     let devname = format!("/dev/i2c-{}", busnum);
 
-    let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
-    let bme = Bme280::new(&mut debugDevice).unwrap();
+    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let debug_device = DebugDeviceDecorator {device: linuxi2cdevice};
+    let bme = Bme280::new(debug_device).unwrap();
 
     let p = bme.read_pressure().unwrap();
     println!("The pressure is: {:.2} in hg.", p);
@@ -74,12 +74,12 @@ fn pressure_reading_should_be_reasonable() {
     assert!(p < 35.0);
 }
 
-struct DebugDeviceDecorator<'a, T: I2CDevice<Error=LinuxI2CError> + Sized + 'a> {
-    device: &'a mut T
+struct DebugDeviceDecorator<T: I2CDevice<Error=LinuxI2CError> + Sized> {
+    device: T
 }
 
-impl<'a, T> I2CDevice for DebugDeviceDecorator<'a, T>
-    where T: I2CDevice<Error = LinuxI2CError> + Sized + 'a {
+impl<T> I2CDevice for DebugDeviceDecorator<T>
+    where T: I2CDevice<Error = LinuxI2CError> + Sized {
     type Error = LinuxI2CError;
 
     fn read(&mut self, data: &mut [u8]) -> Result<(), Self::Error> {
