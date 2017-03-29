@@ -228,7 +228,7 @@ mod tests {
 
     #[test]
     fn set_of_known_calibration_values_should_yield_known_temperature() {        
-        let mut bme = Bme280::new(FakeDevice {}).unwrap();
+        let bme = Bme280::new(FakeDevice {}).unwrap();
 
         let t = bme.read_temperature().unwrap();
         println!("Temperature is: {}", t);
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn set_of_known_calibration_values_should_yield_known_pressure() {
-        let mut bme = Bme280::new(FakeDevice {}).unwrap();
+        let bme = Bme280::new(FakeDevice {}).unwrap();
 
         let p = bme.read_pressure().unwrap();
         println!("Pressure is: {} inhg.", p);

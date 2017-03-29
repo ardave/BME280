@@ -6,16 +6,16 @@ use i2cdev::core::I2CDevice;
 use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
 use bme280::bme280::{Bme280};
 
-// fn create_device<'a>() -> Bme280<'a, DebugDeviceDecorator<'a, LinuxI2CDevice>> {
-//     let i2c_addr = 0x77;
-//     let busnum = 2;
-//     let devname = format!("/dev/i2c-{}", busnum);
+fn create_device() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
+    let i2c_addr = 0x77;
+    let busnum = 2;
+    let devname = format!("/dev/i2c-{}", busnum);
 
-//     let mut linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-//     let mut debugDevice = DebugDeviceDecorator {device: &mut linuxi2cdevice};
-//     let result = Bme280::new(&mut debugDevice).unwrap();
-//     result
-// }
+    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
+    let debugDevice = DebugDeviceDecorator {device: linuxi2cdevice};
+    let result = Bme280::new(debugDevice).unwrap();
+    result
+}
 
 #[test]
 #[ignore]
@@ -43,13 +43,7 @@ fn it_can_initialize() {
 #[test]
 #[ignore]
 fn temperature_reading_should_be_reasonable() {
-    let i2c_addr = 0x77;
-    let busnum = 2;
-    let devname = format!("/dev/i2c-{}", busnum);
-
-    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let debug_device = DebugDeviceDecorator {device: linuxi2cdevice};
-    let bme = Bme280::new(debug_device).unwrap();
+    let bme = create_device();
 
     let t = bme.read_temperature().unwrap();
     println!("The temperature is: {:.2}", t);
@@ -60,13 +54,7 @@ fn temperature_reading_should_be_reasonable() {
 #[test]
 #[ignore]
 fn pressure_reading_should_be_reasonable() {
-    let i2c_addr = 0x77;
-    let busnum = 2;
-    let devname = format!("/dev/i2c-{}", busnum);
-
-    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let debug_device = DebugDeviceDecorator {device: linuxi2cdevice};
-    let bme = Bme280::new(debug_device).unwrap();
+    let bme = create_device();
 
     let p = bme.read_pressure().unwrap();
     println!("The pressure is: {:.2} in hg.", p);
