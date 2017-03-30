@@ -23,16 +23,16 @@ pub enum Register {
     H2 = 0xE1,
     H3 = 0xE3,
     H4 = 0xE4,
-    H5 = 0xE5, 
+    H5 = 0xE5,
     H6 = 0xE6,
     H7 = 0xE7,
 
     CHIPID = 0xD0,
-    VERSION  = 0xD1,
-    SOFTRESET  = 0xE0,
+    VERSION = 0xD1,
+    SOFTRESET = 0xE0,
 
-    CONTROL_HUM  = 0xF2,
-    CONTROL  = 0xF4,
+    CONTROL_HUM = 0xF2,
+    CONTROL = 0xF4,
     CONFIG = 0xF5,
     PRESSURE_DATA = 0xF7,
     PRESSURE_DATA_1 = 0xF7 + 1,
@@ -40,7 +40,7 @@ pub enum Register {
     TEMP_DATA = 0xFA,
     TEMP_DATA_1 = 0xFA + 1,
     TEMP_DATA_2 = 0xFA + 2,
-    HUMIDITY_DAT  = 0xFD
+    HUMIDITY_DAT = 0xFD,
 }
 
 impl Display for Register {

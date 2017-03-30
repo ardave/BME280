@@ -4,7 +4,7 @@ extern crate bme280;
 use std::error::Error;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
-use bme280::bme280::{Bme280};
+use bme280::bme280::Bme280;
 
 fn create_device() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
     let i2c_addr = 0x77;
@@ -12,7 +12,7 @@ fn create_device() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
     let devname = format!("/dev/i2c-{}", busnum);
 
     let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let debugDevice = DebugDeviceDecorator {device: linuxi2cdevice};
+    let debugDevice = DebugDeviceDecorator { device: linuxi2cdevice };
     let result = Bme280::new(debugDevice).unwrap();
     result
 }
@@ -25,17 +25,17 @@ fn it_can_initialize() {
     let devname = format!("/dev/i2c-{}", busnum);
 
     let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let debug_device = DebugDeviceDecorator {device: linuxi2cdevice};
+    let debug_device = DebugDeviceDecorator { device: linuxi2cdevice };
     let result = Bme280::new(debug_device);
-    
+
     match result {
         Ok(_device) => assert!(true),
         Err(err) => {
             println!("Cause");
             println!("{}", err.cause().unwrap());
             println!("Description");
-            println!("{}", err.description());    
-            assert!(false);        
+            println!("{}", err.description());
+            assert!(false);
         }
     }
 }
@@ -58,16 +58,17 @@ fn pressure_reading_should_be_reasonable() {
 
     let p = bme.read_pressure().unwrap();
     println!("The pressure is: {:.2} in hg.", p);
-    assert!(p > 25.0); 
+    assert!(p > 25.0);
     assert!(p < 35.0);
 }
 
-struct DebugDeviceDecorator<T: I2CDevice<Error=LinuxI2CError> + Sized> {
-    device: T
+struct DebugDeviceDecorator<T: I2CDevice<Error = LinuxI2CError> + Sized> {
+    device: T,
 }
 
 impl<T> I2CDevice for DebugDeviceDecorator<T>
-    where T: I2CDevice<Error = LinuxI2CError> + Sized {
+    where T: I2CDevice<Error = LinuxI2CError> + Sized
+{
     type Error = LinuxI2CError;
 
     fn read(&mut self, data: &mut [u8]) -> Result<(), Self::Error> {
@@ -91,17 +92,23 @@ impl<T> I2CDevice for DebugDeviceDecorator<T>
     }
 
     fn smbus_read_i2c_block_data(&mut self, register: u8, len: u8) -> Result<Vec<u8>, Self::Error> {
-        println!("smbus_read_i2c_block_data: register: {}, len: {}", register, len);
+        println!("smbus_read_i2c_block_data: register: {}, len: {}",
+                 register,
+                 len);
         self.device.smbus_read_i2c_block_data(register, len)
     }
 
     fn smbus_write_block_data(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
-        println!("smbus_write_block_data: register: {}, values: {:?}", register, values);
+        println!("smbus_write_block_data: register: {}, values: {:?}",
+                 register,
+                 values);
         self.device.smbus_write_block_data(register, values)
     }
 
     fn smbus_process_block(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
-        println!("smbus_process_block: register: {}, values: {:?}", register, values);
+        println!("smbus_process_block: register: {}, values: {:?}",
+                 register,
+                 values);
         self.device.smbus_process_block(register, values)
     }
 
@@ -119,4 +126,3 @@ impl<T> I2CDevice for DebugDeviceDecorator<T>
         Ok(result)
     }
 }
-
