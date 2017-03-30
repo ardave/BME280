@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::fmt::Result;
 use std::fmt::Formatter;
 
+/// Enum mapping sensor hex addresses to human-readable values.
 #[derive(Debug)]
 pub enum Register {
     T1 = 0x88,

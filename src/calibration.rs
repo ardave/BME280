@@ -1,6 +1,8 @@
+/// Struct to hold calibration values programmed into the sensor 
+/// at the factory.  Typically loaded once upon sensor initialization
+/// and then used throughout the life of the sensor reference.
 #[derive(Debug)]
 pub struct Calibration {
-    // Still need to consider signed-ness and endianness:
     pub t1 : u16,
     pub t2 : i16,
     pub t3 : i16,

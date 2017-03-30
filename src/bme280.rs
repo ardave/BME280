@@ -1,3 +1,8 @@
+//! # BME280 Crate 
+//!
+//! Intended to provide a simplified abstraction for communicating with the Bosch BME280
+//! sensor using an I2C bus in Linux
+
 use std::{thread, time};
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CError;
@@ -23,72 +28,15 @@ pub struct Bme280<T: I2CDevice<Error=LinuxI2CError> + Sized> {
 }
 
 impl<T: I2CDevice<Error=LinuxI2CError> + Sized> Bme280<T> {
+    /// Initializes a new instance of the Bme280 sensor
     pub fn new(dev: T) -> Result<Bme280<T>, LinuxI2CError> {
-        let mut foo = dev;
-        let cal = try!(Bme280::get_calibration(&mut foo));
-        try!(foo.smbus_write_byte_data(Register::CONTROL as u8, MAX_OVER_SAMPLING_AND_NORMAL_MODE));
-        Ok(Bme280 { calibration: cal, device: RefCell::new(foo), mode: BME280OSAMPLE1 })
+        let mut devmut = dev;
+        let cal = try!(Bme280::get_calibration(&mut devmut));
+        try!(devmut.smbus_write_byte_data(Register::CONTROL as u8, MAX_OVER_SAMPLING_AND_NORMAL_MODE));
+        Ok(Bme280 { calibration: cal, device: RefCell::new(devmut), mode: BME280OSAMPLE1 })
     }
 
-    fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
-        Ok(Calibration {
-            t1: try!(dev.smbus_read_word_data(Register::T1 as u8)),
-            t2: try!(dev.smbus_read_word_data(Register::T2 as u8)) as i16,
-            t3: try!(dev.smbus_read_word_data(Register::T3 as u8)) as i16,
-
-            p1: try!(dev.smbus_read_word_data(Register::P1 as u8)),
-            p2: try!(dev.smbus_read_word_data(Register::P2 as u8)) as i16,
-            p3: try!(dev.smbus_read_word_data(Register::P3 as u8)) as i16,
-            p4: try!(dev.smbus_read_word_data(Register::P4 as u8)) as i16,
-            p5: try!(dev.smbus_read_word_data(Register::P5 as u8)) as i16,
-            p6: try!(dev.smbus_read_word_data(Register::P6 as u8)) as i16,
-            p7: try!(dev.smbus_read_word_data(Register::P7 as u8)) as i16,
-            p8: try!(dev.smbus_read_word_data(Register::P8 as u8)) as i16,
-            p9: try!(dev.smbus_read_word_data(Register::P9 as u8)) as i16,
-
-            h1: try!(dev.smbus_read_word_data(Register::T1 as u8)),
-            h2: try!(dev.smbus_read_word_data(Register::T1 as u8)) as i16,
-            h3: try!(dev.smbus_read_word_data(Register::T1 as u8)),
-            h7: try!(dev.smbus_read_word_data(Register::T1 as u8))
-        })
-    }
-
-
-    fn read_raw_temp(&self) -> Result<f64, LinuxI2CError> { 
-        let mut a = self.device.borrow_mut();
-        let dev = a.deref_mut();
-        
-        
-        try!(dev.smbus_write_byte_data(Register::CONTROL_HUM as u8, self.mode));
-        let meas = self.mode << 5 | self.mode << 2 | 1;
-        try!(dev.smbus_write_byte_data(Register::CONTROL as u8, meas));
-        let mut sleep_time = 0.00125 + 0.0023 * (1 << self.mode) as f32;
-        sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
-        sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
-        let dur = time::Duration::from_millis((sleep_time * 1000.0) as u64);
-        thread::sleep(dur);
-        
-        let msb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA as u8)) as u32;
-        let lsb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA_1 as u8)) as u32;
-        let xlsb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA_2 as u8)) as u32;
-
-        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
-        println!("raw temp: {}", raw as f64);
-        Ok(raw as f64)
-    }
-
-    fn calc_t_fine(&self) -> Result<f64, LinuxI2CError> {
-        let ut = try!(self.read_raw_temp());
-        let t1 = self.calibration.t1 as f64;
-        let t2 = self.calibration.t2 as f64;
-        let t3 = self.calibration.t3 as f64;
-        let var1 = (ut / 16384.0 - t1 / 1024.0) * t2;
-        let var2 = ((ut / 131072.0 - t1 / 8192.0) * (ut / 131072.0 - t1 / 8192.0)) * t3;
-        let t_fine = var1 + var2;
-        println!("t_fine: {}", t_fine);
-        Ok(t_fine)
-    }
-
+    /// Reads the current Fahrenheit temperature value from the sensor
     pub fn read_temperature(&self) -> Result<f64, LinuxI2CError> {
         // Technically I'm skipping the step of casting to an integer, which would
         // result in rounding down of the var1 and var2 that were used in the original
@@ -98,18 +46,7 @@ impl<T: I2CDevice<Error=LinuxI2CError> + Sized> Bme280<T> {
         Ok(fahrenheit)
     }
 
-    fn read_raw_pressure(&self) -> Result<u32, LinuxI2CError> {
-        let mut refmut = self.device.borrow_mut();
-        let dev = refmut.deref_mut();
-        
-        let msb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
-        let lsb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA_1 as u8)) as u32;
-        let xlsb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA_2 as u8)) as u32;
-        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;        
-        println!("raw pressure: {}", raw);
-        Ok(raw)
-    }
-
+    /// Reads the current barometric pressure in InHg from the sensor
     pub fn read_pressure(&self) -> Result<f64, LinuxI2CError> {
         let p1 = self.calibration.p1 as f64;
         let p2 = self.calibration.p2 as f64;
@@ -141,12 +78,84 @@ impl<T: I2CDevice<Error=LinuxI2CError> + Sized> Bme280<T> {
         let pascals = p_2 + (var1_4 + var2_4 + p7) / 16.0;        
         let in_hg = pascals *  0.000295299830714;
         Ok(in_hg)
-    }    
+    }  
+
+    pub fn read_humidity(&self) -> Result<f64, LinuxI2CError> {
+        Ok(0.0)
+    }
+
+    fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
+        Ok(Calibration {
+            t1: try!(dev.smbus_read_word_data(Register::T1 as u8)),
+            t2: try!(dev.smbus_read_word_data(Register::T2 as u8)) as i16,
+            t3: try!(dev.smbus_read_word_data(Register::T3 as u8)) as i16,
+
+            p1: try!(dev.smbus_read_word_data(Register::P1 as u8)),
+            p2: try!(dev.smbus_read_word_data(Register::P2 as u8)) as i16,
+            p3: try!(dev.smbus_read_word_data(Register::P3 as u8)) as i16,
+            p4: try!(dev.smbus_read_word_data(Register::P4 as u8)) as i16,
+            p5: try!(dev.smbus_read_word_data(Register::P5 as u8)) as i16,
+            p6: try!(dev.smbus_read_word_data(Register::P6 as u8)) as i16,
+            p7: try!(dev.smbus_read_word_data(Register::P7 as u8)) as i16,
+            p8: try!(dev.smbus_read_word_data(Register::P8 as u8)) as i16,
+            p9: try!(dev.smbus_read_word_data(Register::P9 as u8)) as i16,
+
+            h1: try!(dev.smbus_read_word_data(Register::T1 as u8)),
+            h2: try!(dev.smbus_read_word_data(Register::T1 as u8)) as i16,
+            h3: try!(dev.smbus_read_word_data(Register::T1 as u8)),
+            h7: try!(dev.smbus_read_word_data(Register::T1 as u8))
+        })
+    }
+
+    fn read_raw_temp(&self) -> Result<f64, LinuxI2CError> { 
+        let mut refmut = self.device.borrow_mut();
+        let dev = refmut.deref_mut();        
+        
+        try!(dev.smbus_write_byte_data(Register::CONTROL_HUM as u8, self.mode));
+        let meas = self.mode << 5 | self.mode << 2 | 1;
+        try!(dev.smbus_write_byte_data(Register::CONTROL as u8, meas));
+        let mut sleep_time = 0.00125 + 0.0023 * (1 << self.mode) as f32;
+        sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
+        sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
+        let dur = time::Duration::from_millis((sleep_time * 1000.0) as u64);
+        thread::sleep(dur);
+        
+        let msb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA as u8)) as u32;
+        let lsb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA_1 as u8)) as u32;
+        let xlsb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA_2 as u8)) as u32;
+
+        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
+        println!("raw temp: {}", raw as f64);
+        Ok(raw as f64)
+    }
+
+    fn calc_t_fine(&self) -> Result<f64, LinuxI2CError> {
+        let ut = try!(self.read_raw_temp());
+        let t1 = self.calibration.t1 as f64;
+        let t2 = self.calibration.t2 as f64;
+        let t3 = self.calibration.t3 as f64;
+        let var1 = (ut / 16384.0 - t1 / 1024.0) * t2;
+        let var2 = ((ut / 131072.0 - t1 / 8192.0) * (ut / 131072.0 - t1 / 8192.0)) * t3;
+        let t_fine = var1 + var2;
+        println!("t_fine: {}", t_fine);
+        Ok(t_fine)
+    }
+
+    fn read_raw_pressure(&self) -> Result<u32, LinuxI2CError> {
+        let mut refmut = self.device.borrow_mut();
+        let dev = refmut.deref_mut();
+        
+        let msb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
+        let lsb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA_1 as u8)) as u32;
+        let xlsb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA_2 as u8)) as u32;
+        let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;        
+        println!("raw pressure: {}", raw);
+        Ok(raw)
+    }  
 }
 
 #[cfg(test)]
 mod tests {
-
     use i2cdev::core::I2CDevice;
     use i2cdev::linux::{LinuxI2CError};
     use std::io::{Error, ErrorKind};
@@ -154,9 +163,7 @@ mod tests {
     use bme280::{Bme280};
     use super::super::register::Register;
 
-    struct FakeDevice {
-
-    }
+    struct FakeDevice { }
 
     impl I2CDevice for FakeDevice {
         type Error = LinuxI2CError;
@@ -231,7 +238,7 @@ mod tests {
         let bme = Bme280::new(FakeDevice {}).unwrap();
 
         let t = bme.read_temperature().unwrap();
-        println!("Temperature is: {}", t);
+        println!("Temperature is: {}.", t);
         assert!((t - 72.91).abs() < 0.01);
     }
 
@@ -243,6 +250,12 @@ mod tests {
         println!("Pressure is: {} inhg.", p);
         assert!((p - 30.20).abs() < 0.01);
     }
+
+    #[test]
+    fn set_of_known_calibration_values_should_yield_known_humidity() {
+        let bme = Bme280::new(FakeDevice {}).unwrap();
+
+        let h = bme.read_humidity().unwrap();
+        println!("Humidity is {}%.", h);
+    }
 }
-
-
