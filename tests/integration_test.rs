@@ -12,8 +12,8 @@ fn create_device() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
     let devname = format!("/dev/i2c-{}", busnum);
 
     let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let debugDevice = DebugDeviceDecorator { device: linuxi2cdevice };
-    let result = Bme280::new(debugDevice).unwrap();
+    let debug_device = DebugDeviceDecorator { device: linuxi2cdevice };
+    let result = Bme280::new(debug_device).unwrap();
     result
 }
 
@@ -60,6 +60,17 @@ fn pressure_reading_should_be_reasonable() {
     println!("The pressure is: {:.2} in hg.", p);
     assert!(p > 25.0);
     assert!(p < 35.0);
+}
+
+#[test]
+#[ignore]
+fn humidity_reading_should_be_reasonable() {
+    let bme = create_device();
+
+    let h = bme.read_humidity().unwrap();
+    println!("The humidity is: {:.2}%.", h);
+    assert!(h > 0.0);
+    assert!(h < 100.0);
 }
 
 struct DebugDeviceDecorator<T: I2CDevice<Error = LinuxI2CError> + Sized> {
