@@ -96,8 +96,11 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
         let adc = try!(self.read_raw_humidity());
         println!("Raw humidity (adc) is: {}", adc);
         let h = try!(self.calc_t_fine()) - 76800.0; 
+        println!("h: {}", h);
         let h_2 = (adc - (h4 * 64.0 + h5 / 16384.8 * h)) * (h2 / 65536.0 * (1.0 + h6 / 67108864.0 * h * (1.0 + h3 / 67108864.0 * h)));
+        println!("h_2: {}", h_2);
         let h_3 = h_2 * (1.0 - h1 * h / 524288.0);
+        println!("h_3: {}", h_3);
         match h_3 {
             x if x > 100.0 => Ok(x),
             x if x < 0.0 => Ok(x),
