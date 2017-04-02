@@ -289,8 +289,8 @@ mod tests {
                 x if x == Register::PRESSURE_DATA as u8 => Ok(92),
                 x if x == Register::PRESSURE_DATA_1 as u8 => Ok(215),
                 x if x == Register::PRESSURE_DATA_2 as u8 => Ok(112),
-                x if x == Register::HUMIDITY_DAT as u8 => Ok(0),
-                x if x == Register::HUMIDITY_DAT_1 as u8 => Ok(0),     
+                x if x == Register::HUMIDITY_DAT as u8 => Ok(111),
+                x if x == Register::HUMIDITY_DAT_1 as u8 => Ok(159),     
                 // Would read_word_data work just as well for these calls?
                 x if x == Register::H4 as u8 => Ok(0),
                 x if x == Register::H5 as u8 => Ok(0),  
