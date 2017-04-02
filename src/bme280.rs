@@ -138,9 +138,9 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
                p8: try!(dev.smbus_read_word_data(Register::P8 as u8)) as i16,
                p9: try!(dev.smbus_read_word_data(Register::P9 as u8)) as i16,
 
-               h1: try!(dev.smbus_read_word_data(Register::H1 as u8)),
+               h1: try!(dev.smbus_read_byte_data(Register::H1 as u8)),
                h2: try!(dev.smbus_read_word_data(Register::H2 as u8)) as i16,
-               h3: try!(dev.smbus_read_word_data(Register::H3 as u8)),
+               h3: try!(dev.smbus_read_byte_data(Register::H3 as u8)),
                h4: h4_3,
                h5: h5_4,
                h6: try!(dev.smbus_read_word_data(Register::H7 as u8)),

@@ -21,9 +21,9 @@ pub struct Calibration {
     pub p8: i16,
     pub p9: i16,
 
-    pub h1: u16,
+    pub h1: u8,
     pub h2: i16,
-    pub h3: u16,
+    pub h3: u8,
     pub h4: i32,
     pub h5: i32,
     pub h6: u16,
