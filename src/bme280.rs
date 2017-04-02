@@ -28,6 +28,11 @@ pub struct Bme280<T: I2CDevice<Error = LinuxI2CError> + Sized> {
 }
 
 impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
+    // Am torn between keeping this implementation closely 
+    // mappable back to the reference C++ implementation, and 
+    // instead trying to clean up the code, reduce the profligate 
+    // usage of magic numbers, etc.
+
     /// Initializes a new instance of the Bme280 sensor
     pub fn new(dev: T) -> Result<Bme280<T>, LinuxI2CError> {
         let mut devmut = dev;
@@ -113,6 +118,9 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
+        // Why oh why does the reference implementation combine reading calibration
+        // values with transforming those values?  Am going to just mimic that 
+        // reference implementation until having good tests coverage in place.
         let h4 = try!(dev.smbus_read_byte_data(Register::H4 as u8)) as i32;
         let h4_2 = (h4 << 24) >> 20;
         let h5 = try!(dev.smbus_read_byte_data(Register::H5 as u8)) as i32;
@@ -278,10 +286,10 @@ mod tests {
                 x if x == Register::H1 as u8 => Ok(28960),
                 x if x == Register::H2 as u8 => Ok(28960),
                 x if x == Register::H3 as u8 => Ok(28960),
-
-                x if x == Register::H4 as u8 => Ok(0),
+                
+                x if x == Register::H4 as u8 => Ok(337),
                 x if x == Register::H5 as u8 => Ok(0),
-                x if x == Register::H6 as u8 => Ok(0),
+                x if x == Register::H6 as u8 => Ok(30),
 
                 x if x == Register::H7 as u8 => Ok(28960),
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath)),
@@ -298,10 +306,15 @@ mod tests {
                 x if x == Register::PRESSURE_DATA_2 as u8 => Ok(112),
                 x if x == Register::HUMIDITY_DAT as u8 => Ok(111),
                 x if x == Register::HUMIDITY_DAT_1 as u8 => Ok(159),     
-                // Would read_word_data work just as well for these calls?
-                x if x == Register::H4 as u8 => Ok(0),
-                x if x == Register::H5 as u8 => Ok(0),  
-                x if x == Register::H6 as u8 => Ok(0),         
+                x if x == Register::H1 as u8 => Ok(28960),
+                x if x == Register::H2 as u8 => Ok(28960),
+                x if x == Register::H3 as u8 => Ok(28960),
+                
+                x if x == Register::H4 as u8 => Ok(337),
+                x if x == Register::H5 as u8 => Ok(0),
+                x if x == Register::H6 as u8 => Ok(30),
+
+                x if x == Register::H7 as u8 => Ok(28960),        
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath)),
             }
         }
