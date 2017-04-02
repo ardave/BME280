@@ -41,6 +41,10 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
            })
     }
 
+    pub fn print_calibration(&self) {
+        println!("{}", self.calibration);
+    }
+
     /// Reads the current Fahrenheit temperature value from the sensor
     pub fn read_temperature(&self) -> Result<f64, LinuxI2CError> {
         // Technically I'm skipping the step of casting to an integer, which would

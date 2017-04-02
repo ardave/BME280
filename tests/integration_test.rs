@@ -67,6 +67,8 @@ fn pressure_reading_should_be_reasonable() {
 fn humidity_reading_should_be_reasonable() {
     let bme = create_device();
 
+    bme.print_calibration();
+
     let h = bme.read_humidity().unwrap();
     println!("The humidity is: {:.2}%.", h);
     assert!(h > 0.0);

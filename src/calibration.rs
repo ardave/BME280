@@ -1,3 +1,7 @@
+use std::fmt::Display;
+use std::fmt::Result;
+use std::fmt::Formatter;
+
 /// Struct to hold calibration values programmed into the sensor
 /// at the factory.  Typically loaded once upon sensor initialization
 /// and then used throughout the life of the sensor reference.
@@ -24,4 +28,12 @@ pub struct Calibration {
     pub h5: i32,
     pub h6: u16,
     // pub h7: u16,
+}
+
+impl Display for Calibration {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(f, "{:?}", self)
+        // or, alternatively:
+        // fmt::Debug::fmt(self, f)
+    }
 }
