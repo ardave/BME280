@@ -221,5 +221,6 @@ class BME280(object):
             h = 100
         elif h < 0:
             h = 0
+        print 'Humidity is {0}%.'.format(h)
         return h
 
