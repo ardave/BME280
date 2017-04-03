@@ -1,12 +1,14 @@
-# BME280
-A Linux User-Mode facade for interacting with the Bosch BME280 sensor using I2C.
+extern crate i2cdev;
+extern crate bme280;
 
-Provides temperature, pressure, and humidity readings from an attached sensor.
+use std::error::Error;
+use i2cdev::core::I2CDevice;
+use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
+use bme280::bme280::Bme280;
+use bme280::register::Register;
 
-Has been tested on Beaglebone Black Rev C.
-
-Usage example:
-```
+#[test]
+#[ignore]
 fn read_some_sensor_values() {
     let i2c_addr = 0x77;
     let bus_num = 2;
@@ -16,5 +18,3 @@ fn read_some_sensor_values() {
     println!("Barometric pressure is {} inhg.", bme.read_pressure().unwrap());
     println!("Relative Humidity is {}%.", bme.read_humidity().unwrap());
 }
-```
-

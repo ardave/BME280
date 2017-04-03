@@ -103,7 +103,7 @@ impl I2CDevice for FakeDevice {
 
 #[test]
 fn set_of_known_calibration_values_should_yield_known_temperature() {
-    let bme = Bme280::new(FakeDevice {}).unwrap();
+    let bme = Bme280::new_from_device(FakeDevice {}).unwrap();
 
     let t = bme.read_temperature().unwrap();
     println!("Temperature is: {}.", t);
@@ -112,7 +112,7 @@ fn set_of_known_calibration_values_should_yield_known_temperature() {
 
 #[test]
 fn set_of_known_calibration_values_should_yield_known_pressure() {
-    let bme = Bme280::new(FakeDevice {}).unwrap();
+    let bme = Bme280::new_from_device(FakeDevice {}).unwrap();
 
     let p = bme.read_pressure().unwrap();
     println!("Pressure is: {} inhg.", p);
@@ -121,7 +121,7 @@ fn set_of_known_calibration_values_should_yield_known_pressure() {
 
 #[test]
 fn set_of_known_calibration_values_should_yield_known_humidity() {
-    let bme = Bme280::new(FakeDevice {}).unwrap();
+    let bme = Bme280::new_from_device(FakeDevice {}).unwrap();
 
     let h = bme.read_humidity().unwrap();
     println!("Humidity is {}%.", h);

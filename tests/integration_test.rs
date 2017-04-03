@@ -7,25 +7,25 @@ use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
 use bme280::bme280::Bme280;
 use bme280::register::Register;
 
-fn create_device() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
-    try_create_device().unwrap()
+fn create_bme() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
+    try_create_bme().unwrap()
 }
 
-fn try_create_device() -> Result<Bme280<DebugDeviceDecorator<LinuxI2CDevice>>, LinuxI2CError> {
+fn try_create_bme() -> Result<Bme280<DebugDeviceDecorator<LinuxI2CDevice>>, LinuxI2CError> {
     let i2c_addr = 0x77;
-    let busnum = 2;
-    let devname = format!("/dev/i2c-{}", busnum);
+    let bus_num = 2;
+    let dev_name = format!("/dev/i2c-{}", bus_num);
 
-    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let debug_device = DebugDeviceDecorator { device: linuxi2cdevice };
-    let result = Bme280::new(debug_device);
+    let linux_i2c_device = LinuxI2CDevice::new(dev_name, i2c_addr).unwrap();
+    let debug_device = DebugDeviceDecorator { device: linux_i2c_device };
+    let result = Bme280::new_from_device(debug_device);
     result
 }
 
 #[test]
 #[ignore]
 fn it_can_initialize() {
-    let result = try_create_device();
+    let result = try_create_bme();
 
     match result {
         Ok(_device) => assert!(true),
@@ -42,7 +42,7 @@ fn it_can_initialize() {
 #[test]
 #[ignore]
 fn temperature_reading_should_be_reasonable() {
-    let bme = create_device();
+    let bme = create_bme();
 
     let t = bme.read_temperature().unwrap();
     println!("The temperature is: {:.2}", t);
@@ -53,7 +53,7 @@ fn temperature_reading_should_be_reasonable() {
 #[test]
 #[ignore]
 fn pressure_reading_should_be_reasonable() {
-    let bme = create_device();
+    let bme = create_bme();
 
     let p = bme.read_pressure().unwrap();
     println!("The pressure is: {:.2} in hg.", p);
@@ -64,7 +64,7 @@ fn pressure_reading_should_be_reasonable() {
 #[test]
 #[ignore]
 fn humidity_reading_should_be_reasonable() {
-    let bme = create_device();
+    let bme = create_bme();
 
     bme.print_calibration();
 
