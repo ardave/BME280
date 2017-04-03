@@ -271,7 +271,7 @@ mod tests {
             match register {
                 x if x == Register::T1 as u8 => Ok(28960),
                 x if x == Register::T2 as u8 => Ok(26619),
-                x if x == Register::T3 as u8 => Ok(26619),
+                x if x == Register::T3 as u8 => Ok(50),
 
                 x if x == Register::P1 as u8 => Ok(34988),
                 x if x == Register::P2 as u8 => Ok(54823),
@@ -283,13 +283,13 @@ mod tests {
                 x if x == Register::P8 as u8 => Ok(55306),
                 x if x == Register::P9 as u8 => Ok(4285),
 
-                x if x == Register::H1 as u8 => Ok(28960),
-                x if x == Register::H2 as u8 => Ok(28960),
-                x if x == Register::H3 as u8 => Ok(28960),
+                x if x == Register::H1 as u8 => Ok(75),
+                x if x == Register::H2 as u8 => Ok(355),
+                x if x == Register::H3 as u8 => Ok(0),
                 
-                x if x == Register::H4 as u8 => Ok(337),
+                x if x == Register::H4 as u8 => Ok(21),
                 x if x == Register::H5 as u8 => Ok(0),
-                x if x == Register::H6 as u8 => Ok(30),
+                x if x == Register::H6 as u8 => Ok(0),
 
                 x if x == Register::H7 as u8 => Ok(28960),
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath)),
@@ -306,13 +306,13 @@ mod tests {
                 x if x == Register::PRESSURE_DATA_2 as u8 => Ok(112),
                 x if x == Register::HUMIDITY_DAT as u8 => Ok(111),
                 x if x == Register::HUMIDITY_DAT_1 as u8 => Ok(159),     
-                x if x == Register::H1 as u8 => Ok(28960),
-                x if x == Register::H2 as u8 => Ok(28960),
-                x if x == Register::H3 as u8 => Ok(28960),
+                x if x == Register::H1 as u8 => Ok(75),
+                x if x == Register::H2 as u8 => Ok(355),
+                x if x == Register::H3 as u8 => Ok(0),
                 
-                x if x == Register::H4 as u8 => Ok(337),
+                x if x == Register::H4 as u8 => Ok(21),
                 x if x == Register::H5 as u8 => Ok(0),
-                x if x == Register::H6 as u8 => Ok(30),
+                x if x == Register::H6 as u8 => Ok(0),
 
                 x if x == Register::H7 as u8 => Ok(28960),        
                 _ => Err(LinuxI2CError::Nix(nix::Error::InvalidPath)),
@@ -326,7 +326,7 @@ mod tests {
 
         let t = bme.read_temperature().unwrap();
         println!("Temperature is: {}.", t);
-        assert!((t - 72.91).abs() < 0.01);
+        assert!((t - 70.44).abs() < 0.01);
     }
 
     #[test]
@@ -335,7 +335,7 @@ mod tests {
 
         let p = bme.read_pressure().unwrap();
         println!("Pressure is: {} inhg.", p);
-        assert!((p - 30.20).abs() < 0.01);
+        assert!((p - 30.14).abs() < 0.01);
     }
 
     #[test]
@@ -344,6 +344,6 @@ mod tests {
 
         let h = bme.read_humidity().unwrap();
         println!("Humidity is {}%.", h);
-        assert!((h - 75.0).abs() < 0.01);
+        assert!((h - 38.68).abs() < 0.01);
     }
 }
