@@ -8,19 +8,10 @@ use bme280::bme280::Bme280;
 use bme280::register::Register;
 
 fn create_device() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
-    let i2c_addr = 0x77;
-    let busnum = 2;
-    let devname = format!("/dev/i2c-{}", busnum);
-
-    let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
-    let debug_device = DebugDeviceDecorator { device: linuxi2cdevice };
-    let result = Bme280::new(debug_device).unwrap();
-    result
+    try_create_device().unwrap()
 }
 
-#[test]
-#[ignore]
-fn it_can_initialize() {
+fn try_create_device() -> Result<Bme280<DebugDeviceDecorator<LinuxI2CDevice>>, LinuxI2CError> {
     let i2c_addr = 0x77;
     let busnum = 2;
     let devname = format!("/dev/i2c-{}", busnum);
@@ -28,6 +19,13 @@ fn it_can_initialize() {
     let linuxi2cdevice = LinuxI2CDevice::new(devname, i2c_addr).unwrap();
     let debug_device = DebugDeviceDecorator { device: linuxi2cdevice };
     let result = Bme280::new(debug_device);
+    result
+}
+
+#[test]
+#[ignore]
+fn it_can_initialize() {
+    let result = try_create_device();
 
     match result {
         Ok(_device) => assert!(true),
@@ -48,7 +46,7 @@ fn temperature_reading_should_be_reasonable() {
 
     let t = bme.read_temperature().unwrap();
     println!("The temperature is: {:.2}", t);
-    assert!(t > -50.0); // I'm starting out thinking fahrenheit, but we'll get there.
+    assert!(t > -50.0); 
     assert!(t < 130.0);
 }
 
