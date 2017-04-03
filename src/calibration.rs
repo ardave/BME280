@@ -26,8 +26,8 @@ pub struct Calibration {
     pub h3: u8,
     pub h4: i32,
     pub h5: i32,
-    pub h6: i16,
-    // pub h7: u16,
+    pub h6: i16, 
+    // pub h7: u16, // not used in reference source
 }
 
 impl Display for Calibration {

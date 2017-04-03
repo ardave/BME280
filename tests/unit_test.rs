@@ -34,18 +34,12 @@ impl I2CDevice for FakeDevice {
     }
 
     #[warn(unused_variables)]
-    fn smbus_read_i2c_block_data(&mut self,
-                                    register: u8,
-                                    len: u8)
-                                    -> Result<Vec<u8>, Self::Error> {
+    fn smbus_read_i2c_block_data(&mut self, register: u8, len: u8) -> Result<Vec<u8>, Self::Error> {
         Ok(vec![1, 2, 3])
     }
 
     #[warn(unused_variables)]
-    fn smbus_write_block_data(&mut self,
-                                register: u8,
-                                values: &[u8])
-                                -> Result<(), Self::Error> {
+    fn smbus_write_block_data(&mut self, register: u8, values: &[u8]) -> Result<(), Self::Error> {
         Ok(())
     }
 
@@ -73,7 +67,7 @@ impl I2CDevice for FakeDevice {
             x if x == Register::H1 as u8 => Ok(75),
             x if x == Register::H2 as u8 => Ok(355),
             x if x == Register::H3 as u8 => Ok(0),
-            
+
             x if x == Register::H4 as u8 => Ok(21),
             x if x == Register::H5 as u8 => Ok(0),
             x if x == Register::H6 as u8 => Ok(0),
@@ -96,7 +90,7 @@ impl I2CDevice for FakeDevice {
             x if x == Register::H1 as u8 => Ok(75),
             x if x == Register::H2 as u8 => Ok(355),
             x if x == Register::H3 as u8 => Ok(0),
-            
+
             x if x == Register::H4 as u8 => Ok(21),
             x if x == Register::H5 as u8 => Ok(0),
             x if x == Register::H6 as u8 => Ok(0),

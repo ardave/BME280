@@ -28,9 +28,9 @@ pub struct Bme280<T: I2CDevice<Error = LinuxI2CError> + Sized> {
 }
 
 impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
-    // Am torn between keeping this implementation closely 
-    // mappable back to the reference C++ implementation, and 
-    // instead trying to clean up the code, reduce the profligate 
+    // Am torn between keeping this implementation closely
+    // mappable back to the reference C++ implementation, and
+    // instead trying to clean up the code, reduce the profligate
     // usage of magic numbers, etc.
 
     /// Initializes a new instance of the Bme280 sensor
@@ -104,28 +104,29 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
 
         let adc = try!(self.read_raw_humidity());
         println!("Raw humidity (adc) is: {}", adc);
-        let h = try!(self.calc_t_fine()) - 76800.0; 
+        let h = try!(self.calc_t_fine()) - 76800.0;
         println!("h: {}", h);
-        let h_2 = (adc - (h4 * 64.0 + h5 / 16384.8 * h)) * (h2 / 65536.0 * (1.0 + h6 / 67108864.0 * h * (1.0 + h3 / 67108864.0 * h)));
+        let h_2 = (adc - (h4 * 64.0 + h5 / 16384.8 * h)) *
+                  (h2 / 65536.0 * (1.0 + h6 / 67108864.0 * h * (1.0 + h3 / 67108864.0 * h)));
         println!("h_2: {}", h_2);
         let h_3 = h_2 * (1.0 - h1 * h_2 / 524288.0);
         println!("h_3: {}", h_3);
         match h_3 {
             x if x > 100.0 => Ok(x),
             x if x < 0.0 => Ok(x),
-            _ => Ok(h_3)
-        }        
+            _ => Ok(h_3),
+        }
     }
 
     fn get_calibration(dev: &mut T) -> Result<Calibration, LinuxI2CError> {
         // Why oh why does the reference implementation combine reading calibration
-        // values with transforming those values?  Am going to just mimic that 
+        // values with transforming those values?  Am going to just mimic that
         // reference implementation until having good tests coverage in place.
         let h4 = try!(dev.smbus_read_byte_data(Register::H4 as u8)) as i32;
         let h4_2 = (h4 << 24) >> 20;
         let h5 = try!(dev.smbus_read_byte_data(Register::H5 as u8)) as i32;
         let h4_3 = h4_2 | (h5 & 0x0F);
-        
+
         let h5_2 = try!(dev.smbus_read_byte_data(Register::H6 as u8)) as i32;
         let h5_3 = (h5_2 << 24) >> 20;
         let h5_again = try!(dev.smbus_read_byte_data(Register::H5 as u8)) as i32;
@@ -286,7 +287,7 @@ mod tests {
                 x if x == Register::H1 as u8 => Ok(75),
                 x if x == Register::H2 as u8 => Ok(355),
                 x if x == Register::H3 as u8 => Ok(0),
-                
+
                 x if x == Register::H4 as u8 => Ok(21),
                 x if x == Register::H5 as u8 => Ok(0),
                 x if x == Register::H6 as u8 => Ok(0),
@@ -309,7 +310,7 @@ mod tests {
                 x if x == Register::H1 as u8 => Ok(75),
                 x if x == Register::H2 as u8 => Ok(355),
                 x if x == Register::H3 as u8 => Ok(0),
-                
+
                 x if x == Register::H4 as u8 => Ok(21),
                 x if x == Register::H5 as u8 => Ok(0),
                 x if x == Register::H6 as u8 => Ok(0),

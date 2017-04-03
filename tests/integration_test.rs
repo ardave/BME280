@@ -46,7 +46,7 @@ fn temperature_reading_should_be_reasonable() {
 
     let t = bme.read_temperature().unwrap();
     println!("The temperature is: {:.2}", t);
-    assert!(t > -50.0); 
+    assert!(t > -50.0);
     assert!(t < 130.0);
 }
 
@@ -140,43 +140,43 @@ impl<T> I2CDevice for DebugDeviceDecorator<T>
 }
 
 fn to_str(register: u8) -> &'static str {
-      match register {
-                x if x == Register::T1 as u8 => "T1",
-                x if x == Register::T2 as u8 => "T2",
-                x if x == Register::T3 as u8 => "T3",
+    match register {
+        x if x == Register::T1 as u8 => "T1",
+        x if x == Register::T2 as u8 => "T2",
+        x if x == Register::T3 as u8 => "T3",
 
-                x if x == Register::P1 as u8 => "P1",
-                x if x == Register::P2 as u8 => "P2",
-                x if x == Register::P3 as u8 => "P3",
-                x if x == Register::P4 as u8 => "P4",
-                x if x == Register::P5 as u8 => "P5",
-                x if x == Register::P6 as u8 => "P6",
-                x if x == Register::P7 as u8 => "P7",
-                x if x == Register::P8 as u8 => "P8",
-                x if x == Register::P9 as u8 => "P9",
+        x if x == Register::P1 as u8 => "P1",
+        x if x == Register::P2 as u8 => "P2",
+        x if x == Register::P3 as u8 => "P3",
+        x if x == Register::P4 as u8 => "P4",
+        x if x == Register::P5 as u8 => "P5",
+        x if x == Register::P6 as u8 => "P6",
+        x if x == Register::P7 as u8 => "P7",
+        x if x == Register::P8 as u8 => "P8",
+        x if x == Register::P9 as u8 => "P9",
 
-                x if x == Register::H1 as u8 => "H1",
-                x if x == Register::H2 as u8 => "H2",
-                x if x == Register::H3 as u8 => "H3",                
-                x if x == Register::H4 as u8 => "H4",
-                x if x == Register::H5 as u8 => "H5",
-                x if x == Register::H6 as u8 => "H6",
-                x if x == Register::H7 as u8 => "H7",
+        x if x == Register::H1 as u8 => "H1",
+        x if x == Register::H2 as u8 => "H2",
+        x if x == Register::H3 as u8 => "H3",                
+        x if x == Register::H4 as u8 => "H4",
+        x if x == Register::H5 as u8 => "H5",
+        x if x == Register::H6 as u8 => "H6",
+        x if x == Register::H7 as u8 => "H7",
 
-                x if x == Register::CHIPID as u8 => "CHIPID",
-                x if x == Register::VERSION as u8 => "VERSION",
-                x if x == Register::SOFTRESET as u8 => "SOFTRESET",
-                x if x == Register::CONTROL_HUM as u8 => "CONTROL_HUM",
-                x if x == Register::CONTROL as u8 => "CONTROL",
-                x if x == Register::CONFIG as u8 => "CONFIG",
-                x if x == Register::PRESSURE_DATA as u8 => "PRESSURE_DATA",
-                x if x == Register::PRESSURE_DATA_1 as u8 => "PRESSURE_DATA_1",
-                x if x == Register::PRESSURE_DATA_2 as u8 => "PRESSURE_DATA_2",
-                x if x == Register::TEMP_DATA as u8 => "TEMP_DATA",
-                x if x == Register::TEMP_DATA_1 as u8 => "TEMP_DATA_1",
-                x if x == Register::TEMP_DATA_2 as u8 => "TEMP_DATA_2",
-                x if x == Register::HUMIDITY_DAT as u8 => "HUMIDITY_DAT",
-                x if x == Register::HUMIDITY_DAT_1 as u8 => "HUMIDITY_DAT_1",
-                _ => "Register not mapped",
-            }
+        x if x == Register::CHIPID as u8 => "CHIPID",
+        x if x == Register::VERSION as u8 => "VERSION",
+        x if x == Register::SOFTRESET as u8 => "SOFTRESET",
+        x if x == Register::CONTROL_HUM as u8 => "CONTROL_HUM",
+        x if x == Register::CONTROL as u8 => "CONTROL",
+        x if x == Register::CONFIG as u8 => "CONFIG",
+        x if x == Register::PRESSURE_DATA as u8 => "PRESSURE_DATA",
+        x if x == Register::PRESSURE_DATA_1 as u8 => "PRESSURE_DATA_1",
+        x if x == Register::PRESSURE_DATA_2 as u8 => "PRESSURE_DATA_2",
+        x if x == Register::TEMP_DATA as u8 => "TEMP_DATA",
+        x if x == Register::TEMP_DATA_1 as u8 => "TEMP_DATA_1",
+        x if x == Register::TEMP_DATA_2 as u8 => "TEMP_DATA_2",
+        x if x == Register::HUMIDITY_DAT as u8 => "HUMIDITY_DAT",
+        x if x == Register::HUMIDITY_DAT_1 as u8 => "HUMIDITY_DAT_1",
+        _ => "Register not mapped",
+    }
 }
