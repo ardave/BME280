@@ -5,6 +5,7 @@ use std::error::Error;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
 use bme280::bme280::Bme280;
+use bme280::register::Register;
 
 fn create_device() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
     let i2c_addr = 0x77;
@@ -126,16 +127,58 @@ impl<T> I2CDevice for DebugDeviceDecorator<T>
     }
 
     fn smbus_read_word_data(&mut self, register: u8) -> Result<u16, LinuxI2CError> {
-        print!("smbus_read_word_data: register: {}", register);
+        print!("smbus_read_word_data: register: {}", to_str(register));
         let result = try!(self.device.smbus_read_word_data(register));
         println!(" result: {}", result);
         Ok(result)
     }
 
     fn smbus_read_byte_data(&mut self, register: u8) -> Result<u8, Self::Error> {
-        print!("smbus_read_byte_data: register: {}", register);
+        print!("smbus_read_byte_data: register: {}", to_str(register));
         let result = try!(self.device.smbus_read_byte_data(register));
         println!(" result: {}", result);
         Ok(result)
     }
+}
+
+fn to_str(register: u8) -> &'static str {
+      match register {
+                x if x == Register::T1 as u8 => "T1",
+                x if x == Register::T2 as u8 => "T2",
+                x if x == Register::T3 as u8 => "T3",
+
+                x if x == Register::P1 as u8 => "P1",
+                x if x == Register::P2 as u8 => "P2",
+                x if x == Register::P3 as u8 => "P3",
+                x if x == Register::P4 as u8 => "P4",
+                x if x == Register::P5 as u8 => "P5",
+                x if x == Register::P6 as u8 => "P6",
+                x if x == Register::P7 as u8 => "P7",
+                x if x == Register::P8 as u8 => "P8",
+                x if x == Register::P9 as u8 => "P9",
+
+                x if x == Register::H1 as u8 => "H1",
+                x if x == Register::H2 as u8 => "H2",
+                x if x == Register::H3 as u8 => "H3",                
+                x if x == Register::H4 as u8 => "H4",
+                x if x == Register::H5 as u8 => "H5",
+                x if x == Register::H6 as u8 => "H6",
+                x if x == Register::H7 as u8 => "H7",
+
+                x if x == Register::CHIPID as u8 => "CHIPID",
+                x if x == Register::VERSION as u8 => "VERSION",
+                x if x == Register::SOFTRESET as u8 => "SOFTRESET",
+                x if x == Register::CONTROL_HUM as u8 => "CONTROL_HUM",
+                x if x == Register::CONTROL as u8 => "CONTROL",
+                x if x == Register::CONFIG as u8 => "CONFIG",
+                x if x == Register::PRESSURE_DATA as u8 => "PRESSURE_DATA",
+                x if x == Register::PRESSURE_DATA_1 as u8 => "PRESSURE_DATA_1",
+                x if x == Register::PRESSURE_DATA_2 as u8 => "PRESSURE_DATA_2",
+                x if x == Register::TEMP_DATA as u8 => "TEMP_DATA",
+                x if x == Register::TEMP_DATA_1 as u8 => "TEMP_DATA_1",
+                x if x == Register::TEMP_DATA_2 as u8 => "TEMP_DATA_2",
+                x if x == Register::HUMIDITY_DAT as u8 => "HUMIDITY_DAT",
+                x if x == Register::HUMIDITY_DAT_1 as u8 => "HUMIDITY_DAT_1",
+                _ => "Register not mapped",
+            }
 }
