@@ -14,9 +14,13 @@ use super::calibration::Calibration;
 use super::register::Register;
 
 const BME280OSAMPLE1: u8 = 1;
+#[allow(dead_code)] // Exists in reference source
 const BME280OSAMPLE2: u8 = 2;
+#[allow(dead_code)] // Exists in reference source
 const BME280OSAMPLE4: u8 = 3;
+#[allow(dead_code)] // Exists in reference source
 const BME280OSAMPLE8: u8 = 4;
+#[allow(dead_code)] // Exists in reference source
 const BME280OSAMPLE16: u8 = 5;
 
 const MAX_OVER_SAMPLING_AND_NORMAL_MODE: u8 = 0x3F;
@@ -47,7 +51,7 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
     pub fn new_from_device(dev: T) -> Result<Bme280<T>, LinuxI2CError> {
         let mut devmut = dev;
         let cal = try!(Bme280::get_calibration(&mut devmut));
-        try!(devmut.smbus_write_byte_data(Register::CONTROL as u8,
+        try!(devmut.smbus_write_byte_data(Register::Control as u8,
                                           MAX_OVER_SAMPLING_AND_NORMAL_MODE));
         Ok(Bme280 {
                calibration: cal,
@@ -170,8 +174,8 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
         let mut refmut = self.device.borrow_mut();
         let dev = refmut.deref_mut();
 
-        let msb = try!(dev.smbus_read_byte_data(Register::HUMIDITY_DAT as u8)) as u16;
-        let lsb = try!(dev.smbus_read_byte_data(Register::HUMIDITY_DAT_1 as u8)) as u16;
+        let msb = try!(dev.smbus_read_byte_data(Register::HumidityData as u8)) as u16;
+        let lsb = try!(dev.smbus_read_byte_data(Register::HumidityData1 as u8)) as u16;
         let raw = (msb << 8) | lsb;
         Ok(raw as f64)
     }
@@ -180,18 +184,18 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
         let mut refmut = self.device.borrow_mut();
         let dev = refmut.deref_mut();
 
-        try!(dev.smbus_write_byte_data(Register::CONTROL_HUM as u8, self.mode));
+        try!(dev.smbus_write_byte_data(Register::ControlHum as u8, self.mode));
         let meas = self.mode << 5 | self.mode << 2 | 1;
-        try!(dev.smbus_write_byte_data(Register::CONTROL as u8, meas));
+        try!(dev.smbus_write_byte_data(Register::Control as u8, meas));
         let mut sleep_time = 0.00125 + 0.0023 * (1 << self.mode) as f32;
         sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
         sleep_time = sleep_time + 0.0023 * (1 << self.mode) as f32 + 0.000575;
         let dur = time::Duration::from_millis((sleep_time * 1000.0) as u64);
         thread::sleep(dur);
 
-        let msb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA as u8)) as u32;
-        let lsb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA_1 as u8)) as u32;
-        let xlsb = try!(dev.smbus_read_byte_data(Register::TEMP_DATA_2 as u8)) as u32;
+        let msb = try!(dev.smbus_read_byte_data(Register::TemperatureData as u8)) as u32;
+        let lsb = try!(dev.smbus_read_byte_data(Register::TemperatureData1 as u8)) as u32;
+        let xlsb = try!(dev.smbus_read_byte_data(Register::TemperatureData2 as u8)) as u32;
 
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         println!("raw temp: {}", raw as f64);
@@ -214,9 +218,9 @@ impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
         let mut refmut = self.device.borrow_mut();
         let dev = refmut.deref_mut();
 
-        let msb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA as u8)) as u32;
-        let lsb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA_1 as u8)) as u32;
-        let xlsb = try!(dev.smbus_read_byte_data(Register::PRESSURE_DATA_2 as u8)) as u32;
+        let msb = try!(dev.smbus_read_byte_data(Register::PressureData as u8)) as u32;
+        let lsb = try!(dev.smbus_read_byte_data(Register::PressureData1 as u8)) as u32;
+        let xlsb = try!(dev.smbus_read_byte_data(Register::PressureData2 as u8)) as u32;
         let raw = ((msb << 16) | (lsb << 8) | xlsb) >> 4;
         println!("raw pressure: {}", raw);
         Ok(raw)
