@@ -9,7 +9,6 @@ use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
 use std::cell::RefCell;
 use std::ops::DerefMut;
 
-
 use super::calibration::Calibration;
 use super::register::Register;
 
@@ -30,6 +29,25 @@ pub struct Bme280<T: I2CDevice<Error = LinuxI2CError> + Sized> {
     device: RefCell<T>,
     mode: u8,
 }
+
+pub trait Sensor {
+    fn read_temperature(&self) -> Result<f64, LinuxI2CError>;
+    fn read_pressure(&self) -> Result<f64, LinuxI2CError>;
+    fn read_humidity(&self) -> Result<f64, LinuxI2CError>;
+}
+
+impl<T> Sensor for Bme280<T> 
+    where T: I2CDevice<Error = LinuxI2CError> + Sized {
+        fn read_temperature(&self) -> Result<f64, LinuxI2CError> {
+            self.read_temperature()
+        }
+        fn read_pressure(&self) -> Result<f64, LinuxI2CError> {
+            self.read_pressure()
+        }
+        fn read_humidity(&self) -> Result<f64, LinuxI2CError> {
+            self.read_humidity()
+        }
+    }
 
 impl<T: I2CDevice<Error = LinuxI2CError> + Sized> Bme280<T> {
     // Am torn between keeping these function implementations closely
