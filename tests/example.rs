@@ -1,11 +1,8 @@
 extern crate i2cdev;
 extern crate bme280;
 
-use std::error::Error;
-use i2cdev::core::I2CDevice;
-use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
+use i2cdev::linux::{LinuxI2CDevice};
 use bme280::bme280::Bme280;
-use bme280::register::Register;
 
 #[test]
 #[ignore]
