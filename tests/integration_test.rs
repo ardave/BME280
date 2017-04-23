@@ -13,7 +13,7 @@ fn create_bme() -> Bme280<DebugDeviceDecorator<LinuxI2CDevice>> {
 
 fn try_create_bme() -> Result<Bme280<DebugDeviceDecorator<LinuxI2CDevice>>, LinuxI2CError> {
     let i2c_addr = 0x77;
-    let bus_num = 2;
+    let bus_num = 1;
     let dev_name = format!("/dev/i2c-{}", bus_num);
 
     let linux_i2c_device = LinuxI2CDevice::new(dev_name, i2c_addr).unwrap();
