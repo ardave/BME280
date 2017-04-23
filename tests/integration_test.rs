@@ -1,6 +1,7 @@
 extern crate i2cdev;
 extern crate bme280;
 
+use std::{thread, time};
 use std::error::Error;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::{LinuxI2CDevice, LinuxI2CError};
@@ -25,6 +26,7 @@ fn try_create_bme() -> Result<Bme280<DebugDeviceDecorator<LinuxI2CDevice>>, Linu
 #[test]
 #[ignore]
 fn it_can_initialize() {
+    sleep_a_sec();
     let result = try_create_bme();
 
     match result {
@@ -42,6 +44,7 @@ fn it_can_initialize() {
 #[test]
 #[ignore]
 fn temperature_reading_should_be_reasonable() {
+    sleep_a_sec();
     let bme = create_bme();
 
     let t = bme.read_temperature().unwrap();
@@ -53,6 +56,7 @@ fn temperature_reading_should_be_reasonable() {
 #[test]
 #[ignore]
 fn pressure_reading_should_be_reasonable() {
+    sleep_a_sec();
     let bme = create_bme();
 
     let p = bme.read_pressure().unwrap();
@@ -64,9 +68,8 @@ fn pressure_reading_should_be_reasonable() {
 #[test]
 #[ignore]
 fn humidity_reading_should_be_reasonable() {
+    sleep_a_sec();
     let bme = create_bme();
-
-    bme.print_calibration();
 
     let h = bme.read_humidity().unwrap();
     println!("The humidity is: {:.2}%.", h);
@@ -179,4 +182,9 @@ fn to_str(register: u8) -> &'static str {
         x if x == Register::HumidityData1 as u8 => "HumidityData1",
         _ => "Register not mapped",
     }
+}
+
+fn sleep_a_sec() {
+    let dur = time::Duration::from_millis(1000);
+    thread::sleep(dur);
 }
